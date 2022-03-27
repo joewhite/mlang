@@ -8,6 +8,7 @@ describe("parser", () => {
         expect(parse("a = 1")).toStrictEqual({
             type: "assignment",
             lvalue: "a",
+            operator: "=",
             rvalue: "1",
         });
     });
