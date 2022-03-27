@@ -7,14 +7,14 @@ export type Statement = {
     rvalue: unknown;
 };
 
-class TokenQueue {
+class Parser {
     private tokens: Token[];
 
     constructor(tokens: Token[]) {
         this.tokens = tokens;
     }
 
-    next(): string {
+    private next(): string {
         const token = this.tokens.shift();
         if (!token) {
             throw new Error("Unexpected end of line");
@@ -22,13 +22,13 @@ class TokenQueue {
 
         return token.value;
     }
-}
 
-function parseStatement(tokens: TokenQueue): Statement {
-    const lvalue = tokens.next();
-    const operator = tokens.next();
-    const rvalue = tokens.next();
-    return { type: "assignment", lvalue, operator, rvalue };
+    parseStatement(): Statement {
+        const lvalue = this.next();
+        const operator = this.next();
+        const rvalue = this.next();
+        return { type: "assignment", lvalue, operator, rvalue };
+    }
 }
 
 export function parse(input: string): Statement | undefined {
@@ -38,7 +38,7 @@ export function parse(input: string): Statement | undefined {
         return undefined;
     }
 
-    const statement = parseStatement(new TokenQueue(tokens));
+    const statement = new Parser(tokens).parseStatement();
     if (tokens.length > 0) {
         throw new Error(
             'Unexpected token "' + tokens[0].value + '" in line: ' + input
