@@ -2,6 +2,8 @@ export type Token =
     | { type: "value"; value: string }
     | { type: "operator"; value: string };
 
+export type TokenType = Token["type"];
+
 const lexerRules = [
     { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
     { type: "operator", regex: /^([-+*/]|={1,3}|<=?|>=?|!==?)/ },
