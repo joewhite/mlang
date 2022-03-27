@@ -46,18 +46,19 @@ class Parser {
     }
 
     parseExpression(): Expression {
-        if (this.peek(1, "operator")) {
-            return this.parseBinaryOperation();
+        let expression: Expression = this.next();
+        while (this.peek(0, "operator")) {
+            const operator = this.next();
+            const rvalue = this.next();
+            expression = {
+                type: "binaryOperation",
+                lvalue: expression,
+                operator,
+                rvalue,
+            };
         }
 
-        return this.next();
-    }
-
-    parseBinaryOperation(): BinaryOperation {
-        const lvalue = this.next();
-        const operator = this.next();
-        const rvalue = this.next();
-        return { type: "binaryOperation", lvalue, operator, rvalue };
+        return expression;
     }
 }
 

@@ -35,8 +35,23 @@ describe("parser", () => {
         });
         describe("binary operations", () => {
             it("parses +", () => {
-                expect(parse("a = b + c")).toStrictEqual(
-                    Nodes.setA(Nodes.op("b", "+", "c"))
+                expect(parse("a = b + c + d")).toStrictEqual(
+                    Nodes.setA(Nodes.op(Nodes.op("b", "+", "c"), "+", "d"))
+                );
+            });
+            it("parses -", () => {
+                expect(parse("a = b - c - d")).toStrictEqual(
+                    Nodes.setA(Nodes.op(Nodes.op("b", "-", "c"), "-", "d"))
+                );
+            });
+            it("parses *", () => {
+                expect(parse("a = b * c * d")).toStrictEqual(
+                    Nodes.setA(Nodes.op(Nodes.op("b", "*", "c"), "*", "d"))
+                );
+            });
+            it("parses /", () => {
+                expect(parse("a = b / c / d")).toStrictEqual(
+                    Nodes.setA(Nodes.op(Nodes.op("b", "/", "c"), "/", "d"))
                 );
             });
         });
