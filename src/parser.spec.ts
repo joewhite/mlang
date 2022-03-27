@@ -1,4 +1,28 @@
-import { Expression, parse, Statement } from "./parser";
+import { BinaryOperation, Expression, parse, Statement } from "./parser";
+
+class Nodes {
+    static setA(rvalue: Expression): Statement {
+        return {
+            type: "assignment",
+            lvalue: "a",
+            operator: "=",
+            rvalue,
+        };
+    }
+
+    static op(
+        lvalue: Expression,
+        operator: string,
+        rvalue: Expression
+    ): BinaryOperation {
+        return {
+            type: "binaryOperation",
+            lvalue,
+            operator,
+            rvalue,
+        };
+    }
+}
 
 describe("parser", () => {
     it("ignores comments", () => {
@@ -6,22 +30,13 @@ describe("parser", () => {
     });
 
     describe("assignment", () => {
-        function assignA(rvalue: Expression): Statement {
-            return { type: "assignment", lvalue: "a", operator: "=", rvalue };
-        }
-
         it("parses simple assignment", () => {
-            expect(parse("a = 1")).toStrictEqual(assignA("1"));
+            expect(parse("a = 1")).toStrictEqual(Nodes.setA("1"));
         });
         describe("binary operations", () => {
             it("parses +", () => {
                 expect(parse("a = b + c")).toStrictEqual(
-                    assignA({
-                        type: "binaryOperation",
-                        lvalue: "b",
-                        operator: "+",
-                        rvalue: "c",
-                    })
+                    Nodes.setA(Nodes.op("b", "+", "c"))
                 );
             });
         });

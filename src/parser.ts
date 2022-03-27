@@ -2,7 +2,7 @@ import { lex, Token, TokenType } from "./lexer";
 
 export type BinaryOperation = {
     type: "binaryOperation";
-    lvalue: string;
+    lvalue: Expression;
     operator: string;
     rvalue: Expression;
 };
