@@ -45,14 +45,14 @@ class Parser {
         return { type: "assignment", lvalue, operator, rvalue };
     }
 
-    parseExpression(): Expression {
-        let expression: Expression = this.next();
-        while (
-            this.peek(0, "additiveOperator") ||
-            this.peek(0, "multiplicativeOperator")
-        ) {
+    parseBinaryExpression(
+        operatorType: TokenType,
+        getNextValue: () => Expression
+    ): Expression {
+        let expression: Expression = getNextValue();
+        while (this.peek(0, operatorType)) {
             const operator = this.next();
-            const rvalue = this.next();
+            const rvalue = getNextValue();
             expression = {
                 type: "binaryOperation",
                 lvalue: expression,
@@ -62,6 +62,24 @@ class Parser {
         }
 
         return expression;
+    }
+
+    parseExpression(): Expression {
+        return this.parseBinaryExpression("comparisonOperator", () =>
+            this.parseSum()
+        );
+    }
+
+    parseSum(): Expression {
+        return this.parseBinaryExpression("additiveOperator", () =>
+            this.parseTerm()
+        );
+    }
+
+    parseTerm(): Expression {
+        return this.parseBinaryExpression("multiplicativeOperator", () =>
+            this.next()
+        );
     }
 }
 

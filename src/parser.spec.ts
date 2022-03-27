@@ -56,4 +56,28 @@ describe("parser", () => {
             });
         });
     });
+    describe("order of operations", () => {
+        it("puts multiplication over addition", () => {
+            expect(parse("a = b * c + d * e")).toStrictEqual(
+                Nodes.setA(
+                    Nodes.op(
+                        Nodes.op("b", "*", "c"),
+                        "+",
+                        Nodes.op("d", "*", "e")
+                    )
+                )
+            );
+        });
+        it("puts addition over comparison", () => {
+            expect(parse("a = b + c <= d + e")).toStrictEqual(
+                Nodes.setA(
+                    Nodes.op(
+                        Nodes.op("b", "+", "c"),
+                        "<=",
+                        Nodes.op("d", "+", "e")
+                    )
+                )
+            );
+        });
+    });
 });
