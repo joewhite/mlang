@@ -1,6 +1,9 @@
 const lexerRules = [
     { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
-    { type: "operator", regex: /^([-+*/]|={1,3}|<=?|>=?|!==?)/ },
+    { type: "multiplicativeOperator", regex: /^[*/]/ },
+    { type: "additiveOperator", regex: /^[-+]/ },
+    { type: "comparisonOperator", regex: /^(===?|<=?|>=?|!==?)/ },
+    { type: "assignmentOperator", regex: /^=/ },
 ] as const;
 
 export type TokenType = typeof lexerRules[number]["type"];

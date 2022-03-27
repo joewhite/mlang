@@ -39,52 +39,70 @@ describe("lexer", () => {
 
     it("lexes arithmetic operators", () => {
         expect(lex("+-*/")).toStrictEqual([
-            { type: "operator", value: "+" },
-            { type: "operator", value: "-" },
-            { type: "operator", value: "*" },
-            { type: "operator", value: "/" },
+            { type: "additiveOperator", value: "+" },
+            { type: "additiveOperator", value: "-" },
+            { type: "multiplicativeOperator", value: "*" },
+            { type: "multiplicativeOperator", value: "/" },
         ]);
     });
 
     it("lexes assignment operator", () => {
-        expect(lex("=")).toStrictEqual([{ type: "operator", value: "=" }]);
+        expect(lex("=")).toStrictEqual([
+            { type: "assignmentOperator", value: "=" },
+        ]);
     });
     it("lexes equality operator", () => {
-        expect(lex("==")).toStrictEqual([{ type: "operator", value: "==" }]);
+        expect(lex("==")).toStrictEqual([
+            { type: "comparisonOperator", value: "==" },
+        ]);
     });
     it("lexes strict equality operator", () => {
-        expect(lex("===")).toStrictEqual([{ type: "operator", value: "===" }]);
+        expect(lex("===")).toStrictEqual([
+            { type: "comparisonOperator", value: "===" },
+        ]);
     });
     it("lexes not-equal operator", () => {
-        expect(lex("!=")).toStrictEqual([{ type: "operator", value: "!=" }]);
+        expect(lex("!=")).toStrictEqual([
+            { type: "comparisonOperator", value: "!=" },
+        ]);
     });
     it("lexes strict not-equal operator", () => {
-        expect(lex("!==")).toStrictEqual([{ type: "operator", value: "!==" }]);
+        expect(lex("!==")).toStrictEqual([
+            { type: "comparisonOperator", value: "!==" },
+        ]);
     });
     it("lexes less-than operator", () => {
-        expect(lex("<")).toStrictEqual([{ type: "operator", value: "<" }]);
+        expect(lex("<")).toStrictEqual([
+            { type: "comparisonOperator", value: "<" },
+        ]);
     });
     it("lexes less-than-or-equal operator", () => {
-        expect(lex("<=")).toStrictEqual([{ type: "operator", value: "<=" }]);
+        expect(lex("<=")).toStrictEqual([
+            { type: "comparisonOperator", value: "<=" },
+        ]);
     });
     it("lexes greater-than operator", () => {
-        expect(lex(">")).toStrictEqual([{ type: "operator", value: ">" }]);
+        expect(lex(">")).toStrictEqual([
+            { type: "comparisonOperator", value: ">" },
+        ]);
     });
     it("lexes greater-than-or-equal operator", () => {
-        expect(lex(">=")).toStrictEqual([{ type: "operator", value: ">=" }]);
+        expect(lex(">=")).toStrictEqual([
+            { type: "comparisonOperator", value: ">=" },
+        ]);
     });
 
     it("tokenizes a string with no spaces between tokens", () => {
         expect(lex("a=1")).toStrictEqual([
             { type: "value", value: "a" },
-            { type: "operator", value: "=" },
+            { type: "assignmentOperator", value: "=" },
             { type: "value", value: "1" },
         ]);
     });
     it("tokenizes a string with spaces between tokens", () => {
         expect(lex("a = 1")).toStrictEqual([
             { type: "value", value: "a" },
-            { type: "operator", value: "=" },
+            { type: "assignmentOperator", value: "=" },
             { type: "value", value: "1" },
         ]);
     });

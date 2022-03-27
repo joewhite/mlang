@@ -47,7 +47,10 @@ class Parser {
 
     parseExpression(): Expression {
         let expression: Expression = this.next();
-        while (this.peek(0, "operator")) {
+        while (
+            this.peek(0, "additiveOperator") ||
+            this.peek(0, "multiplicativeOperator")
+        ) {
             const operator = this.next();
             const rvalue = this.next();
             expression = {
