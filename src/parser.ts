@@ -83,14 +83,14 @@ class Parser {
     }
 }
 
-export function parse(input: string): Statement | undefined {
+function parseRule<T>(input: string, rule: (_: Parser) => T): T | undefined {
     const tokens = lex(input);
     if (tokens.length === 0) {
         // Blank or comment
         return undefined;
     }
 
-    const statement = new Parser(tokens).parseStatement();
+    const result = rule(new Parser(tokens));
     if (tokens.length > 0) {
         throw new Error(
             'Expected end of line but found "' +
@@ -100,5 +100,13 @@ export function parse(input: string): Statement | undefined {
         );
     }
 
-    return statement;
+    return result;
+}
+
+export function parse(input: string): Statement | undefined {
+    return parseRule(input, (p) => p.parseStatement());
+}
+
+export function parseExpression(input: string): Expression | undefined {
+    return parseRule(input, (p) => p.parseExpression());
 }
