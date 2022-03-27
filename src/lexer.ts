@@ -1,13 +1,14 @@
-export type Token =
-    | { type: "value"; value: string }
-    | { type: "operator"; value: string };
-
-export type TokenType = Token["type"];
-
 const lexerRules = [
     { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
     { type: "operator", regex: /^([-+*/]|={1,3}|<=?|>=?|!==?)/ },
 ] as const;
+
+export type TokenType = typeof lexerRules[number]["type"];
+
+export interface Token {
+    type: TokenType;
+    value: string;
+}
 
 function nextToken(line: string): Token {
     for (const rule of lexerRules) {
