@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */ // temporary during refactoring
 import { lex, Token, TokenType } from "./lexer";
 
 export type BinaryOperation = {
@@ -17,7 +18,7 @@ export type Statement = {
 };
 
 class Parser {
-    private tokens: Token[];
+    private readonly tokens: Token[];
 
     constructor(tokens: Token[]) {
         this.tokens = tokens;

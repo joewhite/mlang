@@ -6,28 +6,26 @@ import {
     Statement,
 } from "./parser";
 
-class Nodes {
-    static setA(rvalue: Expression): Statement {
-        return {
-            type: "assignment",
-            lvalue: "a",
-            operator: "=",
-            rvalue,
-        };
-    }
+function assignNode(lvalue: string, rvalue: Expression): Statement {
+    return {
+        type: "assignment",
+        lvalue,
+        operator: "=",
+        rvalue,
+    };
+}
 
-    static op(
-        lvalue: Expression,
-        operator: string,
-        rvalue: Expression
-    ): BinaryOperation {
-        return {
-            type: "binaryOperation",
-            lvalue,
-            operator,
-            rvalue,
-        };
-    }
+function opNode(
+    lvalue: Expression,
+    operator: string,
+    rvalue: Expression
+): BinaryOperation {
+    return {
+        type: "binaryOperation",
+        lvalue,
+        operator,
+        rvalue,
+    };
 }
 
 describe("parse()", () => {
@@ -37,11 +35,11 @@ describe("parse()", () => {
 
     describe("assignment", () => {
         it("parses simple assignment", () => {
-            expect(parse("a = 1")).toStrictEqual(Nodes.setA("1"));
+            expect(parse("a = 1")).toStrictEqual(assignNode("a", "1"));
         });
         it("parses binary expression", () => {
             expect(parse("a = b + c")).toStrictEqual(
-                Nodes.setA(Nodes.op("b", "+", "c"))
+                assignNode("a", opNode("b", "+", "c"))
             );
         });
     });
@@ -50,33 +48,33 @@ describe("parse()", () => {
 describe("parseExpression()", () => {
     it("parses +", () => {
         expect(parseExpression("a + b + c")).toStrictEqual(
-            Nodes.op(Nodes.op("a", "+", "b"), "+", "c")
+            opNode(opNode("a", "+", "b"), "+", "c")
         );
     });
     it("parses -", () => {
         expect(parseExpression("a - b - c")).toStrictEqual(
-            Nodes.op(Nodes.op("a", "-", "b"), "-", "c")
+            opNode(opNode("a", "-", "b"), "-", "c")
         );
     });
     it("parses *", () => {
         expect(parseExpression("a * b * c")).toStrictEqual(
-            Nodes.op(Nodes.op("a", "*", "b"), "*", "c")
+            opNode(opNode("a", "*", "b"), "*", "c")
         );
     });
     it("parses /", () => {
         expect(parseExpression("a / b / c")).toStrictEqual(
-            Nodes.op(Nodes.op("a", "/", "b"), "/", "c")
+            opNode(opNode("a", "/", "b"), "/", "c")
         );
     });
     describe("order of operations", () => {
         it("puts multiplication over addition", () => {
             expect(parseExpression("a * b + c * d")).toStrictEqual(
-                Nodes.op(Nodes.op("a", "*", "b"), "+", Nodes.op("c", "*", "d"))
+                opNode(opNode("a", "*", "b"), "+", opNode("c", "*", "d"))
             );
         });
         it("puts addition over comparison", () => {
             expect(parseExpression("a + b <= c + d")).toStrictEqual(
-                Nodes.op(Nodes.op("a", "+", "b"), "<=", Nodes.op("c", "+", "d"))
+                opNode(opNode("a", "+", "b"), "<=", opNode("c", "+", "d"))
             );
         });
     });

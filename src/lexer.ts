@@ -15,7 +15,7 @@ export interface Token {
 
 function nextToken(line: string): Token {
     for (const rule of lexerRules) {
-        const match = line.match(rule.regex);
+        const match = rule.regex.exec(line);
         if (match) {
             return { type: rule.type, value: match[0] };
         }
