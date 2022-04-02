@@ -39,6 +39,15 @@ class Parser {
         return token.value;
     }
 
+    parseLine(): Statement | undefined {
+        if (this.tokens.length === 0) {
+            // Blank or comment
+            return undefined;
+        }
+
+        return this.parseStatement();
+    }
+
     parseStatement(): Statement {
         const lvalue = this.next();
         const operator = this.next();
@@ -84,14 +93,11 @@ class Parser {
     }
 }
 
-function parseRule<T>(input: string, rule: (_: Parser) => T): T | undefined {
+function parseRule<T>(input: string, rule: (_: Parser) => T): T {
     const tokens = lex(input);
-    if (tokens.length === 0) {
-        // Blank or comment
-        return undefined;
-    }
+    const parser = new Parser(tokens);
+    const result = rule(parser);
 
-    const result = rule(new Parser(tokens));
     if (tokens.length > 0) {
         throw new Error(
             'Expected end of line but found "' +
@@ -105,9 +111,9 @@ function parseRule<T>(input: string, rule: (_: Parser) => T): T | undefined {
 }
 
 export function parse(input: string): Statement | undefined {
-    return parseRule(input, (p) => p.parseStatement());
+    return parseRule(input, (p) => p.parseLine());
 }
 
-export function parseExpression(input: string): Expression | undefined {
+export function parseExpression(input: string): Expression {
     return parseRule(input, (p) => p.parseExpression());
 }
