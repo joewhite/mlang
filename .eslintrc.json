@@ -8,6 +8,7 @@
     "extends": [
         "plugin:@typescript-eslint/recommended",
         "xo",
+        "xo-typescript",
         "plugin:prettier/recommended"
     ],
     "parser": "@typescript-eslint/parser",
