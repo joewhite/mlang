@@ -9,12 +9,20 @@ export type BinaryOperation = {
 
 export type Expression = string | BinaryOperation;
 
-export type Statement = {
+export type AssignmentStatement = {
     type: "assignment";
     lvalue: string;
     operator: string;
     rvalue: Expression;
 };
+
+export type ConditionalStatement = {
+    type: "conditional";
+    keyword: string;
+    condition: Expression;
+};
+
+export type Statement = AssignmentStatement | ConditionalStatement;
 
 class Parser {
     private readonly tokens: Token[];
@@ -33,10 +41,37 @@ class Parser {
     }
 
     parseStatement(): Statement {
+        const result = this.parseAssignment() ?? this.parseConditional();
+        if (!result) {
+            if (this.tokens.length) {
+                throw new Error("Syntax error at " + this.tokens[0].value);
+            }
+
+            throw new Error("Unexpected end of line");
+        }
+
+        return result;
+    }
+
+    parseAssignment(): Statement | undefined {
+        if (!this.peek(1, "assignmentOperator")) {
+            return undefined;
+        }
+
         const lvalue = this.next();
         const operator = this.next();
         const rvalue = this.parseExpression();
         return { type: "assignment", lvalue, operator, rvalue };
+    }
+
+    parseConditional(): Statement | undefined {
+        if (!this.peek(0, "conditionalKeyword")) {
+            return undefined;
+        }
+
+        const keyword = this.next();
+        const condition = this.parseExpression();
+        return { type: "conditional", keyword, condition };
     }
 
     parseExpression(): Expression {

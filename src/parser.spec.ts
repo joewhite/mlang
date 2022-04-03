@@ -9,6 +9,14 @@ function assignNode(lvalue: string, rvalue: Expression): Statement {
     };
 }
 
+function condNode(keyword: string, condition: Expression): Statement {
+    return {
+        type: "conditional",
+        keyword,
+        condition,
+    };
+}
+
 function opNode(
     lvalue: Expression,
     operator: string,
@@ -34,6 +42,19 @@ describe("parse()", () => {
         it("parses binary expression", () => {
             expect(parse("a = b + c")).toStrictEqual(
                 assignNode("a", opNode("b", "+", "c"))
+            );
+        });
+    });
+
+    describe("conditional", () => {
+        it("parses if", () => {
+            expect(parse("if a == b")).toStrictEqual(
+                condNode("if", opNode("a", "==", "b"))
+            );
+        });
+        it("parses unless", () => {
+            expect(parse("unless a == b")).toStrictEqual(
+                condNode("unless", opNode("a", "==", "b"))
             );
         });
     });

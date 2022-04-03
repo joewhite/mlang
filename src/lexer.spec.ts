@@ -46,6 +46,16 @@ describe("lexer", () => {
         ]);
     });
 
+    it("lexes 'if' keyword", () => {
+        expect(lex("if")).toStrictEqual([
+            { type: "conditionalKeyword", value: "if" },
+        ]);
+    });
+    it("lexes 'unless' keyword", () => {
+        expect(lex("unless")).toStrictEqual([
+            { type: "conditionalKeyword", value: "unless" },
+        ]);
+    });
     it("lexes assignment operator", () => {
         expect(lex("=")).toStrictEqual([
             { type: "assignmentOperator", value: "=" },
