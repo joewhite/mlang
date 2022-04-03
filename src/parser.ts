@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-ordering */ // temporary during refactoring
 import { lex, Token, TokenType } from "./lexer";
 
 export type BinaryOperation = {
@@ -24,21 +23,6 @@ class Parser {
         this.tokens = tokens;
     }
 
-    private peek(index: number, tokenType: TokenType): string | undefined {
-        const token = this.tokens[index];
-        const matches = token?.type === tokenType;
-        return matches ? token.value : undefined;
-    }
-
-    private next(): string {
-        const token = this.tokens.shift();
-        if (!token) {
-            throw new Error("Unexpected end of line");
-        }
-
-        return token.value;
-    }
-
     parseLine(): Statement | undefined {
         if (this.tokens.length === 0) {
             // Blank or comment
@@ -53,25 +37,6 @@ class Parser {
         const operator = this.next();
         const rvalue = this.parseExpression();
         return { type: "assignment", lvalue, operator, rvalue };
-    }
-
-    parseBinaryExpression(
-        operatorType: TokenType,
-        getNextValue: () => Expression
-    ): Expression {
-        let expression: Expression = getNextValue();
-        while (this.peek(0, operatorType)) {
-            const operator = this.next();
-            const rvalue = getNextValue();
-            expression = {
-                type: "binaryOperation",
-                lvalue: expression,
-                operator,
-                rvalue,
-            };
-        }
-
-        return expression;
     }
 
     parseExpression(): Expression {
@@ -90,6 +55,40 @@ class Parser {
         return this.parseBinaryExpression("multiplicativeOperator", () =>
             this.next()
         );
+    }
+
+    private peek(index: number, tokenType: TokenType): string | undefined {
+        const token = this.tokens[index];
+        const matches = token?.type === tokenType;
+        return matches ? token.value : undefined;
+    }
+
+    private next(): string {
+        const token = this.tokens.shift();
+        if (!token) {
+            throw new Error("Unexpected end of line");
+        }
+
+        return token.value;
+    }
+
+    private parseBinaryExpression(
+        operatorType: TokenType,
+        getNextValue: () => Expression
+    ): Expression {
+        let expression: Expression = getNextValue();
+        while (this.peek(0, operatorType)) {
+            const operator = this.next();
+            const rvalue = getNextValue();
+            expression = {
+                type: "binaryOperation",
+                lvalue: expression,
+                operator,
+                rvalue,
+            };
+        }
+
+        return expression;
     }
 }
 
