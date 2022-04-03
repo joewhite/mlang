@@ -38,11 +38,12 @@ describe("lexer", () => {
     });
 
     it("lexes arithmetic operators", () => {
-        expect(lex("+-*/")).toStrictEqual([
+        expect(lex("+-*/\\")).toStrictEqual([
             { type: "additiveOperator", value: "+" },
             { type: "additiveOperator", value: "-" },
             { type: "multiplicativeOperator", value: "*" },
             { type: "multiplicativeOperator", value: "/" },
+            { type: "multiplicativeOperator", value: "\\" },
         ]);
     });
 

@@ -1,7 +1,7 @@
 const lexerRules = [
     { type: "conditionalKeyword", regex: /^(if|unless)\b/ },
     { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
-    { type: "multiplicativeOperator", regex: /^[*/]/ },
+    { type: "multiplicativeOperator", regex: /^[*/\\]/ },
     { type: "additiveOperator", regex: /^[-+]/ },
     { type: "comparisonOperator", regex: /^(===?|<=?|>=?|!==?)/ },
     { type: "assignmentOperator", regex: /^=/ },
@@ -22,7 +22,7 @@ function nextToken(line: string): Token {
         }
     }
 
-    throw new Error("Could not parse token: " + line);
+    throw new Error("Could not parse token at: " + line);
 }
 
 export function lex(line: string): Token[] {

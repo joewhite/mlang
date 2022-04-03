@@ -64,24 +64,29 @@ describe("parse()", () => {
             return parse(input, (parser) => parser.parseExpression());
         }
 
-        it("parses +", () => {
+        it("parses infix +", () => {
             expect(parseExpression("a + b + c")).toStrictEqual(
                 opNode(opNode("a", "+", "b"), "+", "c")
             );
         });
-        it("parses -", () => {
+        it("parses infix -", () => {
             expect(parseExpression("a - b - c")).toStrictEqual(
                 opNode(opNode("a", "-", "b"), "-", "c")
             );
         });
-        it("parses *", () => {
+        it("parses infix *", () => {
             expect(parseExpression("a * b * c")).toStrictEqual(
                 opNode(opNode("a", "*", "b"), "*", "c")
             );
         });
-        it("parses /", () => {
+        it("parses infix /", () => {
             expect(parseExpression("a / b / c")).toStrictEqual(
                 opNode(opNode("a", "/", "b"), "/", "c")
+            );
+        });
+        it("parses infix \\", () => {
+            expect(parseExpression("a \\ b \\ c")).toStrictEqual(
+                opNode(opNode("a", "\\", "b"), "\\", "c")
             );
         });
         describe("order of operations", () => {
