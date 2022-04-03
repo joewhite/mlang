@@ -6,9 +6,9 @@
         "format": "prettier --write \"**/*.+(js|jsx|json|css|md)\"",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
+        "test": "jest",
         "watch": "jest --watch",
-        "prepare": "husky install",
-        "test": "eslint . && jest"
+        "prepare": "husky install"
     },
     "repository": {
         "type": "git",
