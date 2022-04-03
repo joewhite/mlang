@@ -93,10 +93,15 @@ class Parser {
     }
 }
 
-function parseRule<T>(input: string, rule: (_: Parser) => T): T {
+export function parse(input: string): Statement | undefined;
+export function parse<T>(input: string, rule: (parser: Parser) => T): T;
+export function parse(
+    input: string,
+    rule?: (parser: Parser) => unknown
+): unknown {
     const tokens = lex(input);
     const parser = new Parser(tokens);
-    const result = rule(parser);
+    const result = rule ? rule(parser) : parser.parseLine();
 
     if (tokens.length > 0) {
         throw new Error(
@@ -108,12 +113,4 @@ function parseRule<T>(input: string, rule: (_: Parser) => T): T {
     }
 
     return result;
-}
-
-export function parse(input: string): Statement | undefined {
-    return parseRule(input, (p) => p.parseLine());
-}
-
-export function parseExpression(input: string): Expression {
-    return parseRule(input, (p) => p.parseExpression());
 }
