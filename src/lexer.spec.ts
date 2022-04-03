@@ -37,13 +37,15 @@ describe("lexer", () => {
         expect(lex(".23")).toStrictEqual([{ type: "value", value: ".23" }]);
     });
 
-    it("lexes arithmetic operators", () => {
-        expect(lex("+-*/\\")).toStrictEqual([
+    it("lexes operators", () => {
+        expect(lex("+-*/\\!~")).toStrictEqual([
             { type: "additiveOperator", value: "+" },
             { type: "additiveOperator", value: "-" },
             { type: "multiplicativeOperator", value: "*" },
             { type: "multiplicativeOperator", value: "/" },
             { type: "multiplicativeOperator", value: "\\" },
+            { type: "notOperator", value: "!" },
+            { type: "notOperator", value: "~" },
         ]);
     });
 

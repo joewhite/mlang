@@ -1,11 +1,16 @@
-const lexerRules = [
+interface LexerRule {
+    readonly type: string;
+    readonly regex: RegExp;
+}
+const lexerRules: readonly LexerRule[] = [
     { type: "conditionalKeyword", regex: /^(if|unless)\b/ },
     { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
     { type: "multiplicativeOperator", regex: /^[*/\\]/ },
     { type: "additiveOperator", regex: /^[-+]/ },
     { type: "comparisonOperator", regex: /^(===?|<=?|>=?|!==?)/ },
     { type: "assignmentOperator", regex: /^=/ },
-] as const;
+    { type: "notOperator", regex: /^[!~]/ },
+];
 
 export type TokenType = typeof lexerRules[number]["type"];
 

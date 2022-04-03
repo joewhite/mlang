@@ -1,5 +1,11 @@
 import { lex, Token, TokenType } from "./lexer";
 
+export type UnaryOperation = {
+    type: "unaryOperation";
+    operator: string;
+    value: Expression;
+};
+
 export type BinaryOperation = {
     type: "binaryOperation";
     lvalue: Expression;
@@ -7,7 +13,7 @@ export type BinaryOperation = {
     rvalue: Expression;
 };
 
-export type Expression = string | BinaryOperation;
+export type Expression = string | UnaryOperation | BinaryOperation;
 
 export type AssignmentStatement = {
     type: "assignment";
@@ -90,17 +96,29 @@ class Parser {
 
     parseTerm(): Expression {
         return this.parseBinaryExpression("multiplicativeOperator", () =>
-            this.parseValue()
+            this.parseFactor()
         );
+    }
+
+    parseFactor(): Expression {
+        const isMinus = this.peek(0) === "-";
+        const notToken = this.peek(0, "notOperator");
+        if (isMinus || notToken) {
+            const operator = this.next();
+            const value = this.parseValue();
+            return { type: "unaryOperation", operator, value };
+        }
+
+        return this.parseValue();
     }
 
     parseValue(): Expression {
         return this.next("value");
     }
 
-    private peek(index: number, tokenType: TokenType): string | undefined {
+    private peek(index: number, tokenType?: TokenType): string | undefined {
         const token = this.tokens[index];
-        const matches = token?.type === tokenType;
+        const matches = tokenType === undefined || tokenType === token?.type;
         return matches ? token.value : undefined;
     }
 

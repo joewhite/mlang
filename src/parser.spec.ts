@@ -1,4 +1,10 @@
-import { BinaryOperation, Expression, parse, Statement } from "./parser";
+import {
+    BinaryOperation,
+    Expression,
+    parse,
+    Statement,
+    UnaryOperation,
+} from "./parser";
 
 function assignNode(lvalue: string, rvalue: Expression): Statement {
     return {
@@ -15,6 +21,10 @@ function condNode(keyword: string, condition: Expression): Statement {
         keyword,
         condition,
     };
+}
+
+function unaryNode(operator: string, value: Expression): UnaryOperation {
+    return { type: "unaryOperation", operator, value };
 }
 
 function opNode(
@@ -64,10 +74,14 @@ describe("parse()", () => {
             return parse(input, (parser) => parser.parseExpression());
         }
 
-        it("errors on lone operator", () => {
-            expect(() => parseExpression("-")).toThrowError(
-                "Expected value but was additiveOperator: -"
-            );
+        it("parses unary -", () => {
+            expect(parseExpression("-a")).toStrictEqual(unaryNode("-", "a"));
+        });
+        it("parses unary !", () => {
+            expect(parseExpression("!a")).toStrictEqual(unaryNode("!", "a"));
+        });
+        it("parses unary ~", () => {
+            expect(parseExpression("~a")).toStrictEqual(unaryNode("~", "a"));
         });
 
         it("parses infix +", () => {
@@ -96,6 +110,11 @@ describe("parse()", () => {
             );
         });
         describe("order of operations", () => {
+            it("puts negative over multiplication", () => {
+                expect(parseExpression("-a * -b")).toStrictEqual(
+                    opNode(unaryNode("-", "a"), "*", unaryNode("-", "b"))
+                );
+            });
             it("puts multiplication over addition", () => {
                 expect(parseExpression("a * b + c * d")).toStrictEqual(
                     opNode(opNode("a", "*", "b"), "+", opNode("c", "*", "d"))
