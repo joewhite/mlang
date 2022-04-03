@@ -90,8 +90,12 @@ class Parser {
 
     parseTerm(): Expression {
         return this.parseBinaryExpression("multiplicativeOperator", () =>
-            this.next()
+            this.parseValue()
         );
+    }
+
+    parseValue(): Expression {
+        return this.next("value");
     }
 
     private peek(index: number, tokenType: TokenType): string | undefined {
@@ -100,10 +104,17 @@ class Parser {
         return matches ? token.value : undefined;
     }
 
-    private next(): string {
+    private next(tokenType?: TokenType): string {
         const token = this.tokens.shift();
+
         if (!token) {
             throw new Error("Unexpected end of line");
+        }
+
+        if (tokenType && token.type !== tokenType) {
+            throw new Error(
+                `Expected ${tokenType} but was ${token.type}: ${token.value}`
+            );
         }
 
         return token.value;

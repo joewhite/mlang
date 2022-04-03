@@ -64,6 +64,12 @@ describe("parse()", () => {
             return parse(input, (parser) => parser.parseExpression());
         }
 
+        it("errors on lone operator", () => {
+            expect(() => parseExpression("-")).toThrowError(
+                "Expected value but was additiveOperator: -"
+            );
+        });
+
         it("parses infix +", () => {
             expect(parseExpression("a + b + c")).toStrictEqual(
                 opNode(opNode("a", "+", "b"), "+", "c")
