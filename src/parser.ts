@@ -31,7 +31,7 @@ class Parser {
         this.tokens = tokens;
     }
 
-    parseLine(): Statement | undefined {
+    tryParseLine(): Statement | undefined {
         if (this.tokens.length === 0) {
             // Blank or comment
             return undefined;
@@ -41,7 +41,9 @@ class Parser {
     }
 
     parseStatement(): Statement {
-        const result = this.parseAssignment() ?? this.parseConditional();
+        const result =
+            this.tryParseAssignmentStatement() ??
+            this.tryParseConditionalStatement();
         if (!result) {
             if (this.tokens.length) {
                 throw new Error("Syntax error at " + this.tokens[0].value);
@@ -53,7 +55,7 @@ class Parser {
         return result;
     }
 
-    parseAssignment(): Statement | undefined {
+    tryParseAssignmentStatement(): Statement | undefined {
         if (!this.peek(1, "assignmentOperator")) {
             return undefined;
         }
@@ -64,7 +66,7 @@ class Parser {
         return { type: "assignment", lvalue, operator, rvalue };
     }
 
-    parseConditional(): Statement | undefined {
+    tryParseConditionalStatement(): Statement | undefined {
         if (!this.peek(0, "conditionalKeyword")) {
             return undefined;
         }
@@ -135,7 +137,7 @@ export function parse(
 ): unknown {
     const tokens = lex(input);
     const parser = new Parser(tokens);
-    const result = rule ? rule(parser) : parser.parseLine();
+    const result = rule ? rule(parser) : parser.tryParseLine();
 
     if (tokens.length > 0) {
         throw new Error(
