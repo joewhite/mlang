@@ -1,4 +1,4 @@
-import { lex, Token } from "./lexer";
+import { lex } from "./lexer";
 
 export type UnaryOperator = "-" | "!" | "~";
 
@@ -50,9 +50,9 @@ export type ConditionalStatement = {
 export type Statement = AssignmentStatement | ConditionalStatement;
 
 class Parser {
-    private readonly tokens: Token[];
+    private readonly tokens: string[];
 
-    constructor(tokens: Token[]) {
+    constructor(tokens: string[]) {
         this.tokens = tokens;
     }
 
@@ -71,7 +71,7 @@ class Parser {
             this.tryParseConditionalStatement();
         if (!result) {
             if (this.tokens.length) {
-                throw new Error("Syntax error at " + this.tokens[0].value);
+                throw new Error("Syntax error at " + this.tokens[0]);
             }
 
             throw new Error("Unexpected end of line");
@@ -132,7 +132,10 @@ class Parser {
     }
 
     parseValue(): Expression {
-        const regex = /^(@?[\p{L}_]\w*|\d+(\.\d+)?|\.\d+)$/u;
+        // We don't need to be as exacting as the lexer, but at least
+        // spot-check that it's not an operator or something
+        const regex = /^@?[\w.]+$/u;
+
         const value = this.next();
         if (!regex.test(value)) {
             throw new Error("Expected value but found: " + value);
@@ -145,7 +148,7 @@ class Parser {
         index: number,
         ...values: T[]
     ): T | undefined {
-        const token = this.tokens[index]?.value;
+        const token = this.tokens[index];
         return values.includes(token as T) ? (token as T) : undefined;
     }
 
@@ -156,7 +159,7 @@ class Parser {
             throw new Error("Unexpected end of line");
         }
 
-        return token.value;
+        return token;
     }
 
     private parseBinaryExpression(
@@ -192,10 +195,7 @@ export function parse(
 
     if (tokens.length > 0) {
         throw new Error(
-            'Expected end of line but found "' +
-                tokens[0].value +
-                '" in line: ' +
-                input
+            `Expected end of line but found "${tokens[0]}" in line: ${input}`
         );
     }
 

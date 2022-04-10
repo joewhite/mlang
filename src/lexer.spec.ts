@@ -15,111 +15,84 @@ describe("lexer", () => {
     });
 
     it("lexes a single-character identifier", () => {
-        expect(lex("a")).toStrictEqual([{ type: "value", value: "a" }]);
+        expect(lex("a")).toStrictEqual(["a"]);
     });
     it("lexes an identifier", () => {
-        expect(lex("abc1")).toStrictEqual([{ type: "value", value: "abc1" }]);
+        expect(lex("abc1")).toStrictEqual(["abc1"]);
     });
     it("lexes an identifier starting with '_'", () => {
-        expect(lex("_abc1")).toStrictEqual([{ type: "value", value: "_abc1" }]);
+        expect(lex("_abc1")).toStrictEqual(["_abc1"]);
     });
     it("lexes an identifier starting with '@'", () => {
-        expect(lex("@abc1")).toStrictEqual([{ type: "value", value: "@abc1" }]);
+        expect(lex("@abc1")).toStrictEqual(["@abc1"]);
     });
 
     it("lexes an integer", () => {
-        expect(lex("123")).toStrictEqual([{ type: "value", value: "123" }]);
+        expect(lex("123")).toStrictEqual(["123"]);
     });
     it("lexes a float", () => {
-        expect(lex("1.23")).toStrictEqual([{ type: "value", value: "1.23" }]);
+        expect(lex("1.23")).toStrictEqual(["1.23"]);
     });
     it("lexes a float with no leading zero", () => {
-        expect(lex(".23")).toStrictEqual([{ type: "value", value: ".23" }]);
+        expect(lex(".23")).toStrictEqual([".23"]);
     });
 
     it("lexes operators", () => {
         expect(lex("+-*/\\!~")).toStrictEqual([
-            { type: "additiveOperator", value: "+" },
-            { type: "additiveOperator", value: "-" },
-            { type: "multiplicativeOperator", value: "*" },
-            { type: "multiplicativeOperator", value: "/" },
-            { type: "multiplicativeOperator", value: "\\" },
-            { type: "notOperator", value: "!" },
-            { type: "notOperator", value: "~" },
+            "+",
+            "-",
+            "*",
+            "/",
+            "\\",
+            "!",
+            "~",
         ]);
     });
 
+    it("lexes identifier with non-BMP Unicode", () => {
+        expect(lex("𐐨")).toStrictEqual(["𐐨"]);
+    });
     it("lexes 'if' keyword", () => {
-        expect(lex("if")).toStrictEqual([
-            { type: "conditionalKeyword", value: "if" },
-        ]);
+        expect(lex("if")).toStrictEqual(["if"]);
     });
     it("lexes 'unless' keyword", () => {
-        expect(lex("unless")).toStrictEqual([
-            { type: "conditionalKeyword", value: "unless" },
-        ]);
+        expect(lex("unless")).toStrictEqual(["unless"]);
     });
     it("lexes assignment operator", () => {
-        expect(lex("=")).toStrictEqual([
-            { type: "assignmentOperator", value: "=" },
-        ]);
+        expect(lex("=")).toStrictEqual(["="]);
     });
     it("lexes equality operator", () => {
-        expect(lex("==")).toStrictEqual([
-            { type: "comparisonOperator", value: "==" },
-        ]);
+        expect(lex("==")).toStrictEqual(["=="]);
     });
     it("lexes strict equality operator", () => {
-        expect(lex("===")).toStrictEqual([
-            { type: "comparisonOperator", value: "===" },
-        ]);
+        expect(lex("===")).toStrictEqual(["==="]);
     });
     it("lexes not-equal operator", () => {
-        expect(lex("!=")).toStrictEqual([
-            { type: "comparisonOperator", value: "!=" },
-        ]);
+        expect(lex("!=")).toStrictEqual(["!="]);
     });
     it("lexes strict not-equal operator", () => {
-        expect(lex("!==")).toStrictEqual([
-            { type: "comparisonOperator", value: "!==" },
-        ]);
+        expect(lex("!==")).toStrictEqual(["!=="]);
     });
     it("lexes less-than operator", () => {
-        expect(lex("<")).toStrictEqual([
-            { type: "comparisonOperator", value: "<" },
-        ]);
+        expect(lex("<")).toStrictEqual(["<"]);
     });
     it("lexes less-than-or-equal operator", () => {
-        expect(lex("<=")).toStrictEqual([
-            { type: "comparisonOperator", value: "<=" },
-        ]);
+        expect(lex("<=")).toStrictEqual(["<="]);
     });
     it("lexes greater-than operator", () => {
-        expect(lex(">")).toStrictEqual([
-            { type: "comparisonOperator", value: ">" },
-        ]);
+        expect(lex(">")).toStrictEqual([">"]);
     });
     it("lexes greater-than-or-equal operator", () => {
-        expect(lex(">=")).toStrictEqual([
-            { type: "comparisonOperator", value: ">=" },
-        ]);
+        expect(lex(">=")).toStrictEqual([">="]);
     });
 
     it("tokenizes a string with no spaces between tokens", () => {
-        expect(lex("a=1")).toStrictEqual([
-            { type: "value", value: "a" },
-            { type: "assignmentOperator", value: "=" },
-            { type: "value", value: "1" },
-        ]);
+        expect(lex("a=1")).toStrictEqual(["a", "=", "1"]);
     });
     it("tokenizes a string with spaces between tokens", () => {
-        expect(lex("a = 1")).toStrictEqual([
-            { type: "value", value: "a" },
-            { type: "assignmentOperator", value: "=" },
-            { type: "value", value: "1" },
-        ]);
+        expect(lex("a = 1")).toStrictEqual(["a", "=", "1"]);
     });
     it("tokenizes a string with leading spaces", () => {
-        expect(lex("    end")).toStrictEqual([{ type: "value", value: "end" }]);
+        expect(lex("    end")).toStrictEqual(["end"]);
     });
 });

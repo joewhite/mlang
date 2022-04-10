@@ -1,42 +1,31 @@
-interface LexerRule {
-    readonly type: string;
-    readonly regex: RegExp;
-}
-const lexerRules: readonly LexerRule[] = [
-    { type: "conditionalKeyword", regex: /^(if|unless)\b/ },
-    { type: "value", regex: /^([\p{L}@_]\w*|\d+(\.\d+)?|\.\d+)/u },
-    { type: "multiplicativeOperator", regex: /^[*/\\]/ },
-    { type: "additiveOperator", regex: /^[-+]/ },
-    { type: "comparisonOperator", regex: /^(===?|<=?|>=?|!==?)/ },
-    { type: "assignmentOperator", regex: /^=/ },
-    { type: "notOperator", regex: /^[!~]/ },
+const tokenRegexes = [
+    "@?[\\p{L}_]\\w*", // Value (identifier or number)
+    "\\d+(\\.\\d+)?", // Number
+    "\\.\\d+", // Decimal number without leading zero
+    "[-+*/\\\\~]", // Most single-character operators (unary and binary)
+    "={1,3}", // =, ==, and ===
+    "!={0,2}", // !, !=, and !==
+    "<=?", // < and <=
+    ">=?", // > and >=
 ];
+const tokenRegex = new RegExp("^(" + tokenRegexes.join("|") + ")", "u");
 
-export type TokenType = typeof lexerRules[number]["type"];
-
-export interface Token {
-    type: TokenType;
-    value: string;
-}
-
-function nextToken(line: string): Token {
-    for (const rule of lexerRules) {
-        const match = rule.regex.exec(line);
-        if (match) {
-            return { type: rule.type, value: match[0] };
-        }
+function nextToken(line: string): string {
+    const match2 = tokenRegex.exec(line);
+    if (match2) {
+        return match2[0];
     }
 
     throw new Error("Could not parse token at: " + line);
 }
 
-export function lex(line: string): Token[] {
+export function lex(line: string): string[] {
     const results = [];
     line = line.trim();
     while (line && !line.startsWith("#")) {
         const token = nextToken(line);
         results.push(token);
-        line = line.substring(token.value.length).trim();
+        line = line.substring(token.length).trim();
     }
 
     return results;
