@@ -2,11 +2,11 @@ import {
     BinaryOperation,
     BinaryOperator,
     Expression,
-    parse,
+    parseLine,
     Statement,
     UnaryOperation,
     UnaryOperator,
-} from "./parser";
+} from "./line-parser";
 
 function assignNode(lvalue: string, rvalue: Expression): Statement {
     return {
@@ -44,15 +44,15 @@ function opNode(
 
 describe("parse()", () => {
     it("ignores comments", () => {
-        expect(parse("# comment")).toStrictEqual(undefined);
+        expect(parseLine("# comment")).toStrictEqual(undefined);
     });
 
     describe("assignment", () => {
         it("parses simple assignment", () => {
-            expect(parse("a = 1")).toStrictEqual(assignNode("a", "1"));
+            expect(parseLine("a = 1")).toStrictEqual(assignNode("a", "1"));
         });
         it("parses binary expression", () => {
-            expect(parse("a = b + c")).toStrictEqual(
+            expect(parseLine("a = b + c")).toStrictEqual(
                 assignNode("a", opNode("b", "+", "c"))
             );
         });
@@ -60,12 +60,12 @@ describe("parse()", () => {
 
     describe("conditional", () => {
         it("parses if", () => {
-            expect(parse("if a == b")).toStrictEqual(
+            expect(parseLine("if a == b")).toStrictEqual(
                 condNode("if", opNode("a", "==", "b"))
             );
         });
         it("parses unless", () => {
-            expect(parse("unless a == b")).toStrictEqual(
+            expect(parseLine("unless a == b")).toStrictEqual(
                 condNode("unless", opNode("a", "==", "b"))
             );
         });
@@ -73,7 +73,7 @@ describe("parse()", () => {
 
     describe("expressions", () => {
         function parseExpression(input: string) {
-            return parse(input, (parser) => parser.parseExpression());
+            return parseLine(input, (parser) => parser.parseExpression());
         }
 
         it("parses unary -", () => {

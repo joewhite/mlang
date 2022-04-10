@@ -50,7 +50,7 @@ export type ConditionalStatement = {
 
 export type Statement = AssignmentStatement | ConditionalStatement;
 
-class Parser {
+class LineParser {
     private readonly tokens: string[];
 
     constructor(tokens: string[]) {
@@ -184,14 +184,14 @@ class Parser {
     }
 }
 
-export function parse(input: string): Statement | undefined;
-export function parse<T>(input: string, rule: (parser: Parser) => T): T;
-export function parse(
+export function parseLine(input: string): Statement | undefined;
+export function parseLine<T>(input: string, rule: (parser: LineParser) => T): T;
+export function parseLine(
     input: string,
-    rule?: (parser: Parser) => unknown
+    rule?: (parser: LineParser) => unknown
 ): unknown {
     const tokens = lex(input);
-    const parser = new Parser(tokens);
+    const parser = new LineParser(tokens);
     const result = rule ? rule(parser) : parser.tryParseLine();
 
     if (tokens.length > 0) {
