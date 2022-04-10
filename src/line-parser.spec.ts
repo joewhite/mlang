@@ -42,7 +42,7 @@ function opNode(
     };
 }
 
-describe("parse()", () => {
+describe("parseLine()", () => {
     it("ignores comments", () => {
         expect(parseLine("# comment")).toStrictEqual(undefined);
     });
