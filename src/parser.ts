@@ -1,15 +1,34 @@
-import { lex, Token, TokenType } from "./lexer";
+import { lex, Token } from "./lexer";
+
+export type UnaryOperator = "-" | "!" | "~";
 
 export type UnaryOperation = {
     type: "unaryOperation";
-    operator: string;
+    operator: UnaryOperator;
     value: Expression;
 };
+
+export const binaryOperators = [
+    "+",
+    "-",
+    "*",
+    "/",
+    "\\",
+    "==",
+    "===",
+    "!=",
+    "!==",
+    "<",
+    "<=",
+    ">",
+    ">=",
+] as const;
+export type BinaryOperator = typeof binaryOperators[number];
 
 export type BinaryOperation = {
     type: "binaryOperation";
     lvalue: Expression;
-    operator: string;
+    operator: BinaryOperator;
     rvalue: Expression;
 };
 
@@ -62,49 +81,49 @@ class Parser {
     }
 
     tryParseAssignmentStatement(): Statement | undefined {
-        if (!this.peek(1, "assignmentOperator")) {
+        const operator = this.peek(1, "=");
+        if (!operator) {
             return undefined;
         }
 
         const lvalue = this.next();
-        const operator = this.next();
+        this.next();
         const rvalue = this.parseExpression();
         return { type: "assignment", lvalue, operator, rvalue };
     }
 
     tryParseConditionalStatement(): Statement | undefined {
-        if (!this.peek(0, "conditionalKeyword")) {
+        const keyword = this.peek(0, "if", "unless");
+        if (!keyword) {
             return undefined;
         }
 
-        const keyword = this.next();
+        this.next();
         const condition = this.parseExpression();
         return { type: "conditional", keyword, condition };
     }
 
     parseExpression(): Expression {
-        return this.parseBinaryExpression("comparisonOperator", () =>
-            this.parseSum()
+        return this.parseBinaryExpression(
+            ["==", "===", "!=", "!==", "<", "<=", ">", ">="],
+            () => this.parseSum()
         );
     }
 
     parseSum(): Expression {
-        return this.parseBinaryExpression("additiveOperator", () =>
-            this.parseTerm()
-        );
+        return this.parseBinaryExpression(["+", "-"], () => this.parseTerm());
     }
 
     parseTerm(): Expression {
-        return this.parseBinaryExpression("multiplicativeOperator", () =>
+        return this.parseBinaryExpression(["*", "/", "\\"], () =>
             this.parseFactor()
         );
     }
 
     parseFactor(): Expression {
-        const isMinus = this.peek(0) === "-";
-        const notToken = this.peek(0, "notOperator");
-        if (isMinus || notToken) {
-            const operator = this.next();
+        const operator = this.peek(0, "-", "!", "~");
+        if (operator) {
+            this.next();
             const value = this.parseValue();
             return { type: "unaryOperation", operator, value };
         }
@@ -113,38 +132,41 @@ class Parser {
     }
 
     parseValue(): Expression {
-        return this.next("value");
+        const regex = /^(@?[\p{L}_]\w*|\d+(\.\d+)?|\.\d+)$/u;
+        const value = this.next();
+        if (!regex.test(value)) {
+            throw new Error("Expected value but found: " + value);
+        }
+
+        return value;
     }
 
-    private peek(index: number, tokenType?: TokenType): string | undefined {
-        const token = this.tokens[index];
-        const matches = tokenType === undefined || tokenType === token?.type;
-        return matches ? token.value : undefined;
+    private peek<T extends string>(
+        index: number,
+        ...values: T[]
+    ): T | undefined {
+        const token = this.tokens[index]?.value;
+        return values.includes(token as T) ? (token as T) : undefined;
     }
 
-    private next(tokenType?: TokenType): string {
+    private next(): string {
         const token = this.tokens.shift();
 
         if (!token) {
             throw new Error("Unexpected end of line");
         }
 
-        if (tokenType && token.type !== tokenType) {
-            throw new Error(
-                `Expected ${tokenType} but was ${token.type}: ${token.value}`
-            );
-        }
-
         return token.value;
     }
 
     private parseBinaryExpression(
-        operatorType: TokenType,
+        operators: BinaryOperator[],
         getNextValue: () => Expression
     ): Expression {
         let expression: Expression = getNextValue();
-        while (this.peek(0, operatorType)) {
-            const operator = this.next();
+        let operator: BinaryOperator | undefined;
+        while ((operator = this.peek(0, ...operators))) {
+            this.next();
             const rvalue = getNextValue();
             expression = {
                 type: "binaryOperation",

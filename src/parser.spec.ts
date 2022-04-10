@@ -1,9 +1,11 @@
 import {
     BinaryOperation,
+    BinaryOperator,
     Expression,
     parse,
     Statement,
     UnaryOperation,
+    UnaryOperator,
 } from "./parser";
 
 function assignNode(lvalue: string, rvalue: Expression): Statement {
@@ -23,13 +25,13 @@ function condNode(keyword: string, condition: Expression): Statement {
     };
 }
 
-function unaryNode(operator: string, value: Expression): UnaryOperation {
+function unaryNode(operator: UnaryOperator, value: Expression): UnaryOperation {
     return { type: "unaryOperation", operator, value };
 }
 
 function opNode(
     lvalue: Expression,
-    operator: string,
+    operator: BinaryOperator,
     rvalue: Expression
 ): BinaryOperation {
     return {
