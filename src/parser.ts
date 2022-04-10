@@ -1,11 +1,12 @@
 import { lex } from "./lexer";
 
-export type UnaryOperator = "-" | "!" | "~";
+export const unaryOperators = ["-", "!", "~"] as const;
+export type UnaryOperator = typeof unaryOperators[number];
 
 export type UnaryOperation = {
-    type: "unaryOperation";
-    operator: UnaryOperator;
-    value: Expression;
+    readonly type: "unaryOperation";
+    readonly operator: UnaryOperator;
+    readonly value: Expression;
 };
 
 export const binaryOperators = [
@@ -26,25 +27,25 @@ export const binaryOperators = [
 export type BinaryOperator = typeof binaryOperators[number];
 
 export type BinaryOperation = {
-    type: "binaryOperation";
-    lvalue: Expression;
-    operator: BinaryOperator;
-    rvalue: Expression;
+    readonly type: "binaryOperation";
+    readonly lvalue: Expression;
+    readonly operator: BinaryOperator;
+    readonly rvalue: Expression;
 };
 
 export type Expression = string | UnaryOperation | BinaryOperation;
 
 export type AssignmentStatement = {
-    type: "assignment";
-    lvalue: string;
-    operator: string;
-    rvalue: Expression;
+    readonly type: "assignment";
+    readonly lvalue: string;
+    readonly operator: string;
+    readonly rvalue: Expression;
 };
 
 export type ConditionalStatement = {
-    type: "conditional";
-    keyword: string;
-    condition: Expression;
+    readonly type: "conditional";
+    readonly keyword: string;
+    readonly condition: Expression;
 };
 
 export type Statement = AssignmentStatement | ConditionalStatement;
