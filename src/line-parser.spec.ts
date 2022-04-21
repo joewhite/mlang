@@ -25,6 +25,10 @@ function condNode(keyword: string, condition: Expression): Statement {
     };
 }
 
+function endNode(): Statement {
+    return { type: "end" };
+}
+
 function unaryNode(operator: UnaryOperator, value: Expression): UnaryOperation {
     return { type: "unaryOperation", operator, value };
 }
@@ -45,6 +49,10 @@ function opNode(
 describe("parseLine()", () => {
     it("ignores comments", () => {
         expect(parseLine("# comment")).toStrictEqual(undefined);
+    });
+
+    it("parses the end statement", () => {
+        expect(parseLine("end")).toStrictEqual(endNode());
     });
 
     describe("assignment", () => {

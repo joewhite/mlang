@@ -48,7 +48,14 @@ export type ConditionalStatement = {
     readonly condition: Expression;
 };
 
-export type Statement = AssignmentStatement | ConditionalStatement;
+export type EndStatement = {
+    readonly type: "end";
+};
+
+export type Statement =
+    | AssignmentStatement
+    | ConditionalStatement
+    | EndStatement;
 
 class LineParser {
     private readonly tokens: string[];
@@ -69,10 +76,11 @@ class LineParser {
     parseStatement(): Statement {
         const result =
             this.tryParseAssignmentStatement() ??
-            this.tryParseConditionalStatement();
+            this.tryParseConditionalStatement() ??
+            this.tryParseEndStatement();
         if (!result) {
             if (this.tokens.length) {
-                throw new Error("Syntax error at " + this.tokens[0]);
+                throw new Error("Syntax error at: " + this.tokens[0]);
             }
 
             throw new Error("Unexpected end of line");
@@ -102,6 +110,16 @@ class LineParser {
         this.next();
         const condition = this.parseExpression();
         return { type: "conditional", keyword, condition };
+    }
+
+    tryParseEndStatement(): Statement | undefined {
+        const keyword = this.peek(0, "end");
+        if (!keyword) {
+            return undefined;
+        }
+
+        this.next();
+        return { type: "end" };
     }
 
     parseExpression(): Expression {
