@@ -8,9 +8,18 @@ interface LineModel {
     children: LineModel[];
 }
 
+interface IndentMarker {
+    indent: number;
+    children: LineModel[];
+}
+
 function getIndentSize(line: string): number {
     const indentMatch = /^ */.exec(line);
     return indentMatch ? indentMatch[0].length : 0;
+}
+
+function last<T>(array: T[]): T {
+    return array[array.length - 1];
 }
 
 function lineModelToScriptStatement(lineModel: LineModel): ScriptStatement {
@@ -24,7 +33,7 @@ function lineModelToScriptStatement(lineModel: LineModel): ScriptStatement {
 
 export function parseScript(...lines: string[]): ScriptStatement[] {
     const script: LineModel[] = [];
-    const currentIndents: LineModel[] = [];
+    const currentIndents: IndentMarker[] = [];
 
     for (const line of lines) {
         const statement = parseLine(line);
@@ -37,16 +46,12 @@ export function parseScript(...lines: string[]): ScriptStatement[] {
                 children: [],
             };
 
-            while (
-                currentIndents[currentIndents.length - 1]?.indent >= indent
-            ) {
+            while (last(currentIndents)?.indent >= indent) {
                 currentIndents.pop();
             }
 
             if (currentIndents.length) {
-                currentIndents[currentIndents.length - 1].children.push(
-                    lineModel
-                );
+                last(currentIndents).children.push(lineModel);
             } else {
                 script.push(lineModel);
             }
