@@ -40,5 +40,8 @@
     },
     "lint-staged": {
         "*.[jt]s": "eslint --cache --fix"
+    },
+    "dependencies": {
+        "ts-essentials": "^9.1.2"
     }
 }
