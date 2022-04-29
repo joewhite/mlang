@@ -11,4 +11,7 @@ describe("compiler", () => {
             expect(compile(["end"])).toStrictEqual(["end"]);
         });
     });
+    it("handles simple assignment", () => {
+        expect(compile(["x = 1"])).toStrictEqual(["set x 1"]);
+    });
 });
