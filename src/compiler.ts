@@ -1,5 +1,18 @@
 function lineToTokens(line: string): string[] {
-    return line.split(" ");
+    const results: string[] = [];
+
+    while (line !== "") {
+        const matches = /^(\w+|=)/.exec(line);
+        if (matches) {
+            const match = matches[1];
+            results.push(match);
+            line = line.substring(match.length).trim();
+        } else {
+            throw new Error("Unexpected token at: " + line);
+        }
+    }
+
+    return results;
 }
 
 function tokensToMlog(tokens: string[]): string {

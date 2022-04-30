@@ -12,6 +12,9 @@ describe("compiler", () => {
         });
     });
     it("handles simple assignment", () => {
-        expect(compile(["x = 1"])).toStrictEqual(["set x 1"]);
+        expect(compile(["value = 1"])).toStrictEqual(["set value 1"]);
+    });
+    it("tokenizes properly without spaces", () => {
+        expect(compile(["value=1"])).toStrictEqual(["set value 1"]);
     });
 });
