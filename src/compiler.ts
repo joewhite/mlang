@@ -1,3 +1,9 @@
+class UnreachableCaseError extends Error {
+    constructor(_: never) {
+        super();
+    }
+}
+
 function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
@@ -15,16 +21,40 @@ function lineToTokens(line: string): string[] {
     return results;
 }
 
-function tokensToMlog(tokens: string[]): string {
-    if (tokens.length >= 3) {
-        return `set ${tokens[0]} ${tokens[2]}`;
+interface EndStatement {
+    readonly type: "end";
+}
+interface AssignmentStatement {
+    readonly type: "assignment";
+    readonly lvalue: string;
+    readonly rvalue: string;
+}
+
+type Statement = EndStatement | AssignmentStatement;
+
+function tokensToStatement(tokens: string[]): Statement {
+    if (tokens[0] === "end") {
+        return { type: "end" };
     }
 
-    return tokens[0];
+    return { type: "assignment", lvalue: tokens[0], rvalue: tokens[2] };
+}
+
+function statementToMlog(statement: Statement): string {
+    const { type } = statement;
+    switch (type) {
+        case "assignment":
+            return `set ${statement.lvalue} ${statement.rvalue}`;
+        case "end":
+            return `end`;
+        default:
+            throw new UnreachableCaseError(type);
+    }
 }
 
 export function compile(source: string[]): string[] {
     const tokens = source.map(lineToTokens);
-    const mlog = tokens.map(tokensToMlog);
+    const statements = tokens.map(tokensToStatement);
+    const mlog = statements.map(statementToMlog);
     return mlog;
 }
