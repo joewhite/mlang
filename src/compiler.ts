@@ -1,14 +1,17 @@
-function toMlog(source: string): string {
-    const equalsIndex = source.indexOf("=");
-    if (equalsIndex >= 0) {
-        return `set ${source.substring(0, equalsIndex).trim()} ${source
-            .substring(equalsIndex + 1)
-            .trim()}`;
+function lineToTokens(line: string): string[] {
+    return line.split(" ");
+}
+
+function tokensToMlog(tokens: string[]): string {
+    if (tokens.length >= 3) {
+        return `set ${tokens[0]} ${tokens[2]}`;
     }
 
-    return source;
+    return tokens[0];
 }
 
 export function compile(source: string[]): string[] {
-    return source.map(toMlog);
+    const tokens = source.map(lineToTokens);
+    const mlog = tokens.map(tokensToMlog);
+    return mlog;
 }
