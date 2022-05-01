@@ -33,11 +33,15 @@ interface AssignmentStatement {
 type Statement = EndStatement | AssignmentStatement;
 
 function tokensToStatement(tokens: string[]): Statement {
-    if (tokens[0] === "end") {
+    if (tokens.length === 1 && tokens[0] === "end") {
         return { type: "end" };
     }
 
-    return { type: "assignment", lvalue: tokens[0], rvalue: tokens[2] };
+    if (tokens.length === 3 && tokens[1] === "=") {
+        return { type: "assignment", lvalue: tokens[0], rvalue: tokens[2] };
+    }
+
+    throw new Error("Syntax error");
 }
 
 function statementToMlog(statement: Statement): string {

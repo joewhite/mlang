@@ -17,4 +17,7 @@ describe("compiler", () => {
     it("tokenizes properly without spaces", () => {
         expect(compile(["value=1"])).toStrictEqual(["set value 1"]);
     });
+    it("errors on extra tokens at end of line", () => {
+        expect(() => compile(["value = 1 1"])).toThrow();
+    });
 });
