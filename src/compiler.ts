@@ -8,7 +8,7 @@ function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|=)/.exec(line);
+        const matches = /^(\w+|[=+])/.exec(line);
         if (matches) {
             const match = matches[1];
             results.push(match);
@@ -21,15 +21,24 @@ function lineToTokens(line: string): string[] {
     return results;
 }
 
+// Expressions
+interface BinaryOperation {
+    type: "binaryOperation";
+    lvalue: string;
+    operator: string;
+    rvalue: Expression;
+}
+type Expression = string | BinaryOperation;
+
+// Statements
 interface EndStatement {
     readonly type: "end";
 }
 interface AssignmentStatement {
     readonly type: "assignment";
     readonly lvalue: string;
-    readonly rvalue: string;
+    readonly rvalue: Expression;
 }
-
 type Statement = EndStatement | AssignmentStatement;
 
 class TokenStream {
@@ -61,7 +70,19 @@ class TokenStream {
     }
 }
 
-function parseStatement(tokens: TokenStream): Statement | undefined {
+function parseExpression(tokens: TokenStream): Expression {
+    let result: Expression = tokens.next();
+
+    if (tokens.peek(0, "+")) {
+        const operator = tokens.next();
+        const rvalue = tokens.next();
+        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
+    }
+
+    return result;
+}
+
+function parseStatement(tokens: TokenStream): Statement {
     if (tokens.peek(0, "end")) {
         tokens.next();
         return { type: "end" };
@@ -70,22 +91,19 @@ function parseStatement(tokens: TokenStream): Statement | undefined {
     if (tokens.peek(1, "=")) {
         const lvalue = tokens.next();
         tokens.next();
-        const rvalue = tokens.next();
+        const rvalue = parseExpression(tokens);
         return { type: "assignment", lvalue, rvalue };
     }
 
-    return undefined;
+    throw new Error("Syntax error");
 }
 
 function tokensToStatement(tokens: string[]): Statement {
     const tokenStream = new TokenStream(tokens);
 
     const statement = parseStatement(tokenStream);
-    if (!statement) {
-        throw new Error("Syntax error");
-    }
-
     tokenStream.verifyEmpty();
+
     return statement;
 }
 
@@ -93,7 +111,15 @@ function statementToMlog(statement: Statement): string {
     const { type } = statement;
     switch (type) {
         case "assignment":
-            return `set ${statement.lvalue} ${statement.rvalue}`;
+            if (typeof statement.rvalue === "string") {
+                return `set ${statement.lvalue} ${statement.rvalue}`;
+            }
+
+            if (typeof statement.rvalue.rvalue === "string") {
+                return `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`;
+            }
+
+            throw new Error("Expression too complex");
         case "end":
             return `end`;
         default:

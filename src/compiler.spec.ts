@@ -20,4 +20,11 @@ describe("compiler", () => {
     it("errors on extra tokens at end of line", () => {
         expect(() => compile(["value = 1 1"])).toThrow();
     });
+    describe("expressions", () => {
+        it("handles addition", () => {
+            expect(compile(["result = a + b"])).toStrictEqual([
+                "op add result a b",
+            ]);
+        });
+    });
 });
