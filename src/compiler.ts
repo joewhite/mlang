@@ -32,16 +32,61 @@ interface AssignmentStatement {
 
 type Statement = EndStatement | AssignmentStatement;
 
-function tokensToStatement(tokens: string[]): Statement {
-    if (tokens.length === 1 && tokens[0] === "end") {
+class TokenStream {
+    tokens: string[];
+
+    constructor(tokens: readonly string[]) {
+        this.tokens = [...tokens];
+    }
+
+    peek(offset: number, value: string): boolean {
+        return this.tokens[offset] === value;
+    }
+
+    next(): string {
+        const result = this.tokens.shift();
+        if (!result) {
+            throw new Error("Unexpected end of line");
+        }
+
+        return result;
+    }
+
+    verifyEmpty(): void {
+        if (this.tokens.length) {
+            throw new Error(
+                "Expected end of line but found: " + this.tokens[0]
+            );
+        }
+    }
+}
+
+function parseStatement(tokens: TokenStream): Statement | undefined {
+    if (tokens.peek(0, "end")) {
+        tokens.next();
         return { type: "end" };
     }
 
-    if (tokens.length === 3 && tokens[1] === "=") {
-        return { type: "assignment", lvalue: tokens[0], rvalue: tokens[2] };
+    if (tokens.peek(1, "=")) {
+        const lvalue = tokens.next();
+        tokens.next();
+        const rvalue = tokens.next();
+        return { type: "assignment", lvalue, rvalue };
     }
 
-    throw new Error("Syntax error");
+    return undefined;
+}
+
+function tokensToStatement(tokens: string[]): Statement {
+    const tokenStream = new TokenStream(tokens);
+
+    const statement = parseStatement(tokenStream);
+    if (!statement) {
+        throw new Error("Syntax error");
+    }
+
+    tokenStream.verifyEmpty();
+    return statement;
 }
 
 function statementToMlog(statement: Statement): string {
