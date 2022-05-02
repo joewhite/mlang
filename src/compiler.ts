@@ -107,29 +107,36 @@ function tokensToStatement(tokens: string[]): Statement {
     return statement;
 }
 
-function statementToMlog(statement: Statement): string {
-    const { type } = statement;
-    switch (type) {
-        case "assignment":
-            if (typeof statement.rvalue === "string") {
-                return `set ${statement.lvalue} ${statement.rvalue}`;
-            }
+class Emitter {
+    emit(statement: Statement): string[] {
+        const { type } = statement;
+        switch (type) {
+            case "assignment":
+                if (typeof statement.rvalue === "string") {
+                    return [`set ${statement.lvalue} ${statement.rvalue}`];
+                }
 
-            if (typeof statement.rvalue.rvalue === "string") {
-                return `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`;
-            }
+                if (typeof statement.rvalue.rvalue === "string") {
+                    return [
+                        `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`,
+                    ];
+                }
 
-            throw new Error("Expression too complex");
-        case "end":
-            return `end`;
-        default:
-            throw new UnreachableCaseError(type);
+                throw new Error("Expression too complex");
+            case "end":
+                return [`end`];
+            default:
+                throw new UnreachableCaseError(type);
+        }
     }
 }
 
 export function compile(source: string[]): string[] {
     const tokens = source.map(lineToTokens);
     const statements = tokens.map(tokensToStatement);
-    const mlog = statements.map(statementToMlog);
+
+    const emitter = new Emitter();
+    const mlog = statements.flatMap((statement) => emitter.emit(statement));
+
     return mlog;
 }
