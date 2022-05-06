@@ -57,6 +57,18 @@ describe("compiler", () => {
                 "op mul result $temp1 d",
             ]);
         });
+        it("handles division", () => {
+            expect(compile(["result = a / b"])).toStrictEqual([
+                "op div result a b",
+            ]);
+        });
+        it("handles multiple divisions", () => {
+            expect(compile(["result = a / b / c / d"])).toStrictEqual([
+                "op div $temp0 a b",
+                "op div $temp1 $temp0 c",
+                "op div result $temp1 d",
+            ]);
+        });
         it("handles parentheses", () => {
             expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
                 "op add $temp0 a b",

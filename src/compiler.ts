@@ -8,7 +8,7 @@ function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|[-+*=()])/.exec(line);
+        const matches = /^(\w+|[-+*/=()])/.exec(line);
         if (matches) {
             const match = matches[1];
             results.push(match);
@@ -28,6 +28,7 @@ const binaryOperators = {
     "+": "add",
     "-": "sub",
     "*": "mul",
+    "/": "div",
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
