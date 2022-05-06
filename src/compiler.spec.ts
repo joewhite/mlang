@@ -26,5 +26,12 @@ describe("compiler", () => {
                 "op add result a b",
             ]);
         });
+        it("handles multiple additions", () => {
+            expect(compile(["result = a + b + c + d"])).toStrictEqual([
+                "op add $temp1 a b",
+                "op add $temp0 $temp1 c",
+                "op add result $temp0 d",
+            ]);
+        });
     });
 });

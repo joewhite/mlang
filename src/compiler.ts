@@ -24,9 +24,9 @@ function lineToTokens(line: string): string[] {
 // Expressions
 interface BinaryOperation {
     type: "binaryOperation";
-    lvalue: string;
+    lvalue: Expression;
     operator: string;
-    rvalue: Expression;
+    rvalue: string;
 }
 type Expression = string | BinaryOperation;
 
@@ -73,7 +73,7 @@ class TokenStream {
 function parseExpression(tokens: TokenStream): Expression {
     let result: Expression = tokens.next();
 
-    if (tokens.peek(0, "+")) {
+    while (tokens.peek(0, "+")) {
         const operator = tokens.next();
         const rvalue = tokens.next();
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
@@ -108,27 +108,35 @@ function tokensToStatement(tokens: string[]): Statement {
 }
 
 class Emitter {
+    private nextTempVariableNumber = 0;
     private readonly instructions: string[] = [];
+
+    resolveExpressionToVariable(expression: Expression): string {
+        if (typeof expression === "string") {
+            return expression;
+        }
+
+        const variable = `$temp${this.nextTempVariableNumber++}`;
+        this.assign(variable, expression);
+        return variable;
+    }
+
+    assign(target: string, value: Expression): void {
+        if (typeof value === "string") {
+            this.instructions.push(`set ${target} ${value}`);
+            return;
+        }
+
+        const lvalue = this.resolveExpressionToVariable(value.lvalue);
+        this.instructions.push(`op add ${target} ${lvalue} ${value.rvalue}`);
+    }
 
     emit(statement: Statement): void {
         const { type } = statement;
         switch (type) {
             case "assignment":
-                if (typeof statement.rvalue === "string") {
-                    this.instructions.push(
-                        `set ${statement.lvalue} ${statement.rvalue}`
-                    );
-                    return;
-                }
-
-                if (typeof statement.rvalue.rvalue === "string") {
-                    this.instructions.push(
-                        `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`
-                    );
-                    return;
-                }
-
-                throw new Error("Expression too complex");
+                this.assign(statement.lvalue, statement.rvalue);
+                break;
             case "end":
                 this.instructions.push(`end`);
                 break;
