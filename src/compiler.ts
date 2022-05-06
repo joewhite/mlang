@@ -8,7 +8,7 @@ function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|[=+])/.exec(line);
+        const matches = /^(\w+|[=+()])/.exec(line);
         if (matches) {
             const match = matches[1];
             results.push(match);
@@ -26,7 +26,7 @@ interface BinaryOperation {
     type: "binaryOperation";
     lvalue: Expression;
     operator: string;
-    rvalue: string;
+    rvalue: Expression;
 }
 type Expression = string | BinaryOperation;
 
@@ -52,10 +52,14 @@ class TokenStream {
         return this.tokens[offset] === value;
     }
 
-    next(): string {
+    next(expectedToken?: string): string {
         const result = this.tokens.shift();
         if (!result) {
             throw new Error("Unexpected end of line");
+        }
+
+        if (expectedToken && result !== expectedToken) {
+            throw new Error(`Expected: ${expectedToken}\n but was: ${result}`);
         }
 
         return result;
@@ -64,18 +68,30 @@ class TokenStream {
     verifyEmpty(): void {
         if (this.tokens.length) {
             throw new Error(
-                "Expected end of line but found: " + this.tokens[0]
+                "Error parsing statement\nExpected end of line but found: " +
+                    this.tokens[0]
             );
         }
     }
 }
 
+function parseTerm(tokens: TokenStream): Expression {
+    if (tokens.peek(0, "(")) {
+        tokens.next("(");
+        const parenthesizedExpression = parseExpression(tokens);
+        tokens.next(")");
+        return parenthesizedExpression;
+    }
+
+    return tokens.next();
+}
+
 function parseExpression(tokens: TokenStream): Expression {
-    let result: Expression = tokens.next();
+    let result: Expression = parseTerm(tokens);
 
     while (tokens.peek(0, "+")) {
         const operator = tokens.next();
-        const rvalue = tokens.next();
+        const rvalue = parseTerm(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
 
@@ -116,26 +132,36 @@ class Emitter {
             return expression;
         }
 
-        const variable = `$temp${this.nextTempVariableNumber++}`;
-        this.assign(variable, expression);
+        // Lazy-generate the variable name at the last moment, when the actual
+        // instruction is being generated, to make sure the variables are in
+        // increasing order in the final generated code, even when we're using
+        // recursion to generate that code. The increasing variable names
+        // aren't strictly a requirement, but they make the code easier to read
+        // and test expectations easier to write.
+        let variable = "";
+        this.assign(() => {
+            variable = `$temp${this.nextTempVariableNumber++}`;
+            return variable;
+        }, expression);
         return variable;
     }
 
-    assign(target: string, value: Expression): void {
+    assign(target: () => string, value: Expression): void {
         if (typeof value === "string") {
-            this.instructions.push(`set ${target} ${value}`);
+            this.instructions.push(`set ${target()} ${value}`);
             return;
         }
 
         const lvalue = this.resolveExpressionToVariable(value.lvalue);
-        this.instructions.push(`op add ${target} ${lvalue} ${value.rvalue}`);
+        const rvalue = this.resolveExpressionToVariable(value.rvalue);
+        this.instructions.push(`op add ${target()} ${lvalue} ${rvalue}`);
     }
 
     emit(statement: Statement): void {
         const { type } = statement;
         switch (type) {
             case "assignment":
-                this.assign(statement.lvalue, statement.rvalue);
+                this.assign(() => statement.lvalue, statement.rvalue);
                 break;
             case "end":
                 this.instructions.push(`end`);

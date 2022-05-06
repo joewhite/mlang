@@ -28,10 +28,22 @@ describe("compiler", () => {
         });
         it("handles multiple additions", () => {
             expect(compile(["result = a + b + c + d"])).toStrictEqual([
-                "op add $temp1 a b",
-                "op add $temp0 $temp1 c",
-                "op add result $temp0 d",
+                "op add $temp0 a b",
+                "op add $temp1 $temp0 c",
+                "op add result $temp1 d",
             ]);
+        });
+        it("handles parentheses", () => {
+            expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
+                "op add $temp0 a b",
+                "op add $temp1 c d",
+                "op add result $temp0 $temp1",
+            ]);
+        });
+        it("errors on missing close parenthesis", () => {
+            expect(() => compile(["result = (a + b"])).toThrowError(
+                "Unexpected end of line"
+            );
         });
     });
 });
