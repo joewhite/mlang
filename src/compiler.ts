@@ -108,35 +108,47 @@ function tokensToStatement(tokens: string[]): Statement {
 }
 
 class Emitter {
-    emit(statement: Statement): string[] {
+    private readonly instructions: string[] = [];
+
+    emit(statement: Statement): void {
         const { type } = statement;
         switch (type) {
             case "assignment":
                 if (typeof statement.rvalue === "string") {
-                    return [`set ${statement.lvalue} ${statement.rvalue}`];
+                    this.instructions.push(
+                        `set ${statement.lvalue} ${statement.rvalue}`
+                    );
+                    return;
                 }
 
                 if (typeof statement.rvalue.rvalue === "string") {
-                    return [
-                        `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`,
-                    ];
+                    this.instructions.push(
+                        `op add ${statement.lvalue} ${statement.rvalue.lvalue} ${statement.rvalue.rvalue}`
+                    );
+                    return;
                 }
 
                 throw new Error("Expression too complex");
             case "end":
-                return [`end`];
+                this.instructions.push(`end`);
+                break;
             default:
                 throw new UnreachableCaseError(type);
         }
     }
+
+    getInstructions(): readonly string[] {
+        return this.instructions;
+    }
 }
 
-export function compile(source: string[]): string[] {
+export function compile(source: string[]): readonly string[] {
     const tokens = source.map(lineToTokens);
     const statements = tokens.map(tokensToStatement);
 
     const emitter = new Emitter();
-    const mlog = statements.flatMap((statement) => emitter.emit(statement));
-
-    return mlog;
+    statements.forEach((statement) => {
+        emitter.emit(statement);
+    });
+    return emitter.getInstructions();
 }
