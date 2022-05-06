@@ -33,6 +33,18 @@ describe("compiler", () => {
                 "op add result $temp1 d",
             ]);
         });
+        it("handles subtraction", () => {
+            expect(compile(["result = a - b"])).toStrictEqual([
+                "op sub result a b",
+            ]);
+        });
+        it("handles multiple subtractions", () => {
+            expect(compile(["result = a - b - c - d"])).toStrictEqual([
+                "op sub $temp0 a b",
+                "op sub $temp1 $temp0 c",
+                "op sub result $temp1 d",
+            ]);
+        });
         it("handles parentheses", () => {
             expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
                 "op add $temp0 a b",

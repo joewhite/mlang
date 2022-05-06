@@ -8,7 +8,7 @@ function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|[=+()])/.exec(line);
+        const matches = /^(\w+|[-+=()])/.exec(line);
         if (matches) {
             const match = matches[1];
             results.push(match);
@@ -22,10 +22,16 @@ function lineToTokens(line: string): string[] {
 }
 
 // Expressions
+const binaryOperators = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    "+": "add",
+    "-": "sub",
+};
+type BinaryOperator = keyof typeof binaryOperators;
 interface BinaryOperation {
     type: "binaryOperation";
     lvalue: Expression;
-    operator: string;
+    operator: BinaryOperator;
     rvalue: Expression;
 }
 type Expression = string | BinaryOperation;
@@ -75,6 +81,10 @@ class TokenStream {
     }
 }
 
+function isBinaryOperator(token: string): token is BinaryOperator {
+    return token in binaryOperators;
+}
+
 function parseTerm(tokens: TokenStream): Expression {
     if (tokens.peek(0, "(")) {
         tokens.next("(");
@@ -89,8 +99,12 @@ function parseTerm(tokens: TokenStream): Expression {
 function parseExpression(tokens: TokenStream): Expression {
     let result: Expression = parseTerm(tokens);
 
-    while (tokens.peek(0, "+")) {
+    while (tokens.peek(0, "+") || tokens.peek(0, "-")) {
         const operator = tokens.next();
+        if (!isBinaryOperator(operator)) {
+            throw new Error("Unexpected error");
+        }
+
         const rvalue = parseTerm(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
@@ -136,8 +150,8 @@ class Emitter {
         // instruction is being generated, to make sure the variables are in
         // increasing order in the final generated code, even when we're using
         // recursion to generate that code. The increasing variable names
-        // aren't strictly a requirement, but they make the code easier to read
-        // and test expectations easier to write.
+        // aren't strictly a requirement, but they make the output easier to
+        // read, and test expectations easier to write.
         let variable = "";
         this.assign(() => {
             variable = `$temp${this.nextTempVariableNumber++}`;
@@ -153,8 +167,11 @@ class Emitter {
         }
 
         const lvalue = this.resolveExpressionToVariable(value.lvalue);
+        const operation = binaryOperators[value.operator];
         const rvalue = this.resolveExpressionToVariable(value.rvalue);
-        this.instructions.push(`op add ${target()} ${lvalue} ${rvalue}`);
+        this.instructions.push(
+            `op ${operation} ${target()} ${lvalue} ${rvalue}`
+        );
     }
 
     emit(statement: Statement): void {
