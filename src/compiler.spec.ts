@@ -45,6 +45,18 @@ describe("compiler", () => {
                 "op sub result $temp1 d",
             ]);
         });
+        it("handles multiplication", () => {
+            expect(compile(["result = a * b"])).toStrictEqual([
+                "op mul result a b",
+            ]);
+        });
+        it("handles multiple multiplications", () => {
+            expect(compile(["result = a * b * c * d"])).toStrictEqual([
+                "op mul $temp0 a b",
+                "op mul $temp1 $temp0 c",
+                "op mul result $temp1 d",
+            ]);
+        });
         it("handles parentheses", () => {
             expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
                 "op add $temp0 a b",

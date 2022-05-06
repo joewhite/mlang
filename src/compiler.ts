@@ -8,7 +8,7 @@ function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|[-+=()])/.exec(line);
+        const matches = /^(\w+|[-+*=()])/.exec(line);
         if (matches) {
             const match = matches[1];
             results.push(match);
@@ -22,29 +22,38 @@ function lineToTokens(line: string): string[] {
 }
 
 // Expressions
+
+/* eslint-disable @typescript-eslint/naming-convention */
 const binaryOperators = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     "+": "add",
     "-": "sub",
+    "*": "mul",
 };
+/* eslint-enable @typescript-eslint/naming-convention */
+
 type BinaryOperator = keyof typeof binaryOperators;
+
 interface BinaryOperation {
     type: "binaryOperation";
     lvalue: Expression;
     operator: BinaryOperator;
     rvalue: Expression;
 }
+
 type Expression = string | BinaryOperation;
 
 // Statements
+
 interface EndStatement {
     readonly type: "end";
 }
+
 interface AssignmentStatement {
     readonly type: "assignment";
     readonly lvalue: string;
     readonly rvalue: Expression;
 }
+
 type Statement = EndStatement | AssignmentStatement;
 
 class TokenStream {
@@ -54,8 +63,14 @@ class TokenStream {
         this.tokens = [...tokens];
     }
 
-    peek(offset: number, value: string): boolean {
-        return this.tokens[offset] === value;
+    peek(
+        offset: number,
+        expectedValue: string | ((value: string) => boolean)
+    ): boolean {
+        const token = this.tokens[offset];
+        return typeof expectedValue === "string"
+            ? token === expectedValue
+            : expectedValue(token);
     }
 
     next(expectedToken?: string): string {
@@ -81,10 +96,6 @@ class TokenStream {
     }
 }
 
-function isBinaryOperator(token: string): token is BinaryOperator {
-    return token in binaryOperators;
-}
-
 function parseTerm(tokens: TokenStream): Expression {
     if (tokens.peek(0, "(")) {
         tokens.next("(");
@@ -99,12 +110,8 @@ function parseTerm(tokens: TokenStream): Expression {
 function parseExpression(tokens: TokenStream): Expression {
     let result: Expression = parseTerm(tokens);
 
-    while (tokens.peek(0, "+") || tokens.peek(0, "-")) {
-        const operator = tokens.next();
-        if (!isBinaryOperator(operator)) {
-            throw new Error("Unexpected error");
-        }
-
+    while (tokens.peek(0, (token) => token in binaryOperators)) {
+        const operator = tokens.next() as BinaryOperator;
         const rvalue = parseTerm(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
