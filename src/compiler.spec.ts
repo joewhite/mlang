@@ -69,6 +69,30 @@ describe("compiler", () => {
                 "op div result $temp1 d",
             ]);
         });
+        it("handles integer division", () => {
+            expect(compile(["result = a // b"])).toStrictEqual([
+                "op idiv result a b",
+            ]);
+        });
+        it("handles multiple integer divisions", () => {
+            expect(compile(["result = a // b // c // d"])).toStrictEqual([
+                "op idiv $temp0 a b",
+                "op idiv $temp1 $temp0 c",
+                "op idiv result $temp1 d",
+            ]);
+        });
+        it("handles modulo", () => {
+            expect(compile(["result = a % b"])).toStrictEqual([
+                "op mod result a b",
+            ]);
+        });
+        it("handles multiple modulos", () => {
+            expect(compile(["result = a % b % c % d"])).toStrictEqual([
+                "op mod $temp0 a b",
+                "op mod $temp1 $temp0 c",
+                "op mod result $temp1 d",
+            ]);
+        });
         it("handles parentheses", () => {
             expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
                 "op add $temp0 a b",
@@ -100,6 +124,20 @@ describe("compiler", () => {
                 expect(compile(["result = a * b / c * d"])).toStrictEqual([
                     "op mul $temp0 a b",
                     "op div $temp1 $temp0 c",
+                    "op mul result $temp1 d",
+                ]);
+            });
+            it("* and % are at the same level", () => {
+                expect(compile(["result = a * b % c * d"])).toStrictEqual([
+                    "op mul $temp0 a b",
+                    "op mod $temp1 $temp0 c",
+                    "op mul result $temp1 d",
+                ]);
+            });
+            it("* and // are at the same level", () => {
+                expect(compile(["result = a * b // c * d"])).toStrictEqual([
+                    "op mul $temp0 a b",
+                    "op idiv $temp1 $temp0 c",
                     "op mul result $temp1 d",
                 ]);
             });
