@@ -21,77 +21,32 @@ describe("compiler", () => {
         expect(() => compile(["value = 1 1"])).toThrow();
     });
     describe("expressions", () => {
-        it("handles addition", () => {
-            expect(compile(["result = a + b"])).toStrictEqual([
-                "op add result a b",
-            ]);
-        });
-        it("handles multiple additions", () => {
-            expect(compile(["result = a + b + c + d"])).toStrictEqual([
-                "op add $temp0 a b",
-                "op add $temp1 $temp0 c",
-                "op add result $temp1 d",
-            ]);
-        });
-        it("handles subtraction", () => {
-            expect(compile(["result = a - b"])).toStrictEqual([
-                "op sub result a b",
-            ]);
-        });
-        it("handles multiple subtractions", () => {
-            expect(compile(["result = a - b - c - d"])).toStrictEqual([
-                "op sub $temp0 a b",
-                "op sub $temp1 $temp0 c",
-                "op sub result $temp1 d",
-            ]);
-        });
-        it("handles multiplication", () => {
-            expect(compile(["result = a * b"])).toStrictEqual([
-                "op mul result a b",
-            ]);
-        });
-        it("handles multiple multiplications", () => {
-            expect(compile(["result = a * b * c * d"])).toStrictEqual([
-                "op mul $temp0 a b",
-                "op mul $temp1 $temp0 c",
-                "op mul result $temp1 d",
-            ]);
-        });
-        it("handles division", () => {
-            expect(compile(["result = a / b"])).toStrictEqual([
-                "op div result a b",
-            ]);
-        });
-        it("handles multiple divisions", () => {
-            expect(compile(["result = a / b / c / d"])).toStrictEqual([
-                "op div $temp0 a b",
-                "op div $temp1 $temp0 c",
-                "op div result $temp1 d",
-            ]);
-        });
-        it("handles integer division", () => {
-            expect(compile(["result = a // b"])).toStrictEqual([
-                "op idiv result a b",
-            ]);
-        });
-        it("handles multiple integer divisions", () => {
-            expect(compile(["result = a // b // c // d"])).toStrictEqual([
-                "op idiv $temp0 a b",
-                "op idiv $temp1 $temp0 c",
-                "op idiv result $temp1 d",
-            ]);
-        });
-        it("handles modulo", () => {
-            expect(compile(["result = a % b"])).toStrictEqual([
-                "op mod result a b",
-            ]);
-        });
-        it("handles multiple modulos", () => {
-            expect(compile(["result = a % b % c % d"])).toStrictEqual([
-                "op mod $temp0 a b",
-                "op mod $temp1 $temp0 c",
-                "op mod result $temp1 d",
-            ]);
+        describe("operators", () => {
+            function itHandles(operator: string, opcode: string) {
+                it(`${operator} (single)`, () => {
+                    expect(compile([`result = a ${operator} b`])).toStrictEqual(
+                        [`op ${opcode} result a b`]
+                    );
+                });
+                it(`${operator} (multiple)`, () => {
+                    expect(
+                        compile([
+                            `result = a ${operator} b ${operator} c ${operator} d`,
+                        ])
+                    ).toStrictEqual([
+                        `op ${opcode} $temp0 a b`,
+                        `op ${opcode} $temp1 $temp0 c`,
+                        `op ${opcode} result $temp1 d`,
+                    ]);
+                });
+            }
+
+            itHandles("+", "add");
+            itHandles("-", "sub");
+            itHandles("*", "mul");
+            itHandles("/", "div");
+            itHandles("%", "mod");
+            itHandles("//", "idiv");
         });
         it("handles parentheses", () => {
             expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
