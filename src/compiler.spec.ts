@@ -81,5 +81,28 @@ describe("compiler", () => {
                 "Unexpected end of line"
             );
         });
+        describe("order of operations", () => {
+            it("+ and - are at the same level", () => {
+                expect(compile(["result = a + b - c + d"])).toStrictEqual([
+                    "op add $temp0 a b",
+                    "op sub $temp1 $temp0 c",
+                    "op add result $temp1 d",
+                ]);
+            });
+            it("* higher precedence than +", () => {
+                expect(compile(["result = a * b + c * d"])).toStrictEqual([
+                    "op mul $temp0 a b",
+                    "op mul $temp1 c d",
+                    "op add result $temp0 $temp1",
+                ]);
+            });
+            it("* and / are at the same level", () => {
+                expect(compile(["result = a * b / c * d"])).toStrictEqual([
+                    "op mul $temp0 a b",
+                    "op div $temp1 $temp0 c",
+                    "op mul result $temp1 d",
+                ]);
+            });
+        });
     });
 });

@@ -24,11 +24,17 @@ function lineToTokens(line: string): string[] {
 // Expressions
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const binaryOperators = {
+const additiveOperators = {
     "+": "add",
     "-": "sub",
+};
+const multiplicativeOperators = {
     "*": "mul",
     "/": "div",
+};
+const binaryOperators = {
+    ...additiveOperators,
+    ...multiplicativeOperators,
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -97,7 +103,7 @@ class TokenStream {
     }
 }
 
-function parseTerm(tokens: TokenStream): Expression {
+function parseFactor(tokens: TokenStream): Expression {
     if (tokens.peek(0, "(")) {
         tokens.next("(");
         const parenthesizedExpression = parseExpression(tokens);
@@ -108,10 +114,22 @@ function parseTerm(tokens: TokenStream): Expression {
     return tokens.next();
 }
 
+function parseTerm(tokens: TokenStream): Expression {
+    let result: Expression = parseFactor(tokens);
+
+    while (tokens.peek(0, (token) => token in multiplicativeOperators)) {
+        const operator = tokens.next() as BinaryOperator;
+        const rvalue = parseFactor(tokens);
+        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
+    }
+
+    return result;
+}
+
 function parseExpression(tokens: TokenStream): Expression {
     let result: Expression = parseTerm(tokens);
 
-    while (tokens.peek(0, (token) => token in binaryOperators)) {
+    while (tokens.peek(0, (token) => token in additiveOperators)) {
         const operator = tokens.next() as BinaryOperator;
         const rvalue = parseTerm(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
