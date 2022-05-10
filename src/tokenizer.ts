@@ -18,7 +18,7 @@ const operatorsLongestFirst: readonly string[] = (function () {
 })();
 
 function nextToken(line: string): string | undefined {
-    const numberMatches = /^(\d+(\.\d+)?)/.exec(line);
+    const numberMatches = /^(-?\d+(\.\d+)?|-?\.\d+)/.exec(line);
     if (numberMatches) {
         return numberMatches[1];
     }

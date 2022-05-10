@@ -41,6 +41,16 @@ class TokenStream {
     }
 }
 
+function parseValue(tokens: TokenStream): string {
+    const value = tokens.next();
+    const valueMatches = /^(\w|-\d|-?\.\d)/.exec(value);
+    if (!valueMatches) {
+        throw new Error(`Expected value but found: ${value}`);
+    }
+
+    return value;
+}
+
 function parseFactor(tokens: TokenStream): Expression {
     if (tokens.peek(0, "(")) {
         tokens.next("(");
@@ -49,7 +59,7 @@ function parseFactor(tokens: TokenStream): Expression {
         return parenthesizedExpression;
     }
 
-    return tokens.next();
+    return parseValue(tokens);
 }
 
 function parseTerm(tokens: TokenStream): Expression {

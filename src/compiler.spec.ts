@@ -19,6 +19,50 @@ it("tokenizes properly without spaces", () => {
 it("errors on extra tokens at end of line", () => {
     expect(() => compile(["value = 1 1"])).toThrow();
 });
+describe("values", () => {
+    it("errors on non-value when value expected", () => {
+        expect(() => compile(["value = +"])).toThrowError(
+            "Expected value but found: +"
+        );
+    });
+    it("accepts alphanumeric with leading alpha", () => {
+        expect(compile(["result = abc123"])).toStrictEqual([
+            "set result abc123",
+        ]);
+    });
+    it("accepts leading underscore", () => {
+        expect(compile(["result = _abc123"])).toStrictEqual([
+            "set result _abc123",
+        ]);
+    });
+    it("accepts integer", () => {
+        expect(compile(["result = 123"])).toStrictEqual(["set result 123"]);
+    });
+    it("accepts decimal", () => {
+        expect(compile(["result = 123.45"])).toStrictEqual([
+            "set result 123.45",
+        ]);
+    });
+    it("accepts decimal with no leading zero", () => {
+        expect(compile(["result = .45"])).toStrictEqual(["set result .45"]);
+    });
+    it("accepts negative integer", () => {
+        expect(compile(["result = -123"])).toStrictEqual(["set result -123"]);
+    });
+    it("accepts negative decimal", () => {
+        expect(compile(["result = -123.45"])).toStrictEqual([
+            "set result -123.45",
+        ]);
+    });
+    it("accepts negative decimal with no leading zero", () => {
+        expect(compile(["result = -.45"])).toStrictEqual(["set result -.45"]);
+    });
+    it("does not accept dollar sign", () => {
+        expect(() => compile(["result = $abc123"])).toThrowError(
+            "Unexpected token at: $abc123"
+        );
+    });
+});
 describe("expressions", () => {
     describe("operators", () => {
         function itHandles(operator: string, opcode: string) {
