@@ -1,3 +1,4 @@
+import { BinaryOperator, Expression, Statement } from "./ast";
 import {
     additiveOperators,
     binaryOperators,
@@ -5,33 +6,6 @@ import {
 } from "./operators";
 import { lineToTokens } from "./tokenizer";
 import { UnreachableCaseError } from "./utils";
-
-// Expressions
-
-export type BinaryOperator = keyof typeof binaryOperators;
-
-interface BinaryOperation {
-    type: "binaryOperation";
-    lvalue: Expression;
-    operator: BinaryOperator;
-    rvalue: Expression;
-}
-
-type Expression = string | BinaryOperation;
-
-// Statements
-
-interface EndStatement {
-    readonly type: "end";
-}
-
-interface AssignmentStatement {
-    readonly type: "assignment";
-    readonly lvalue: string;
-    readonly rvalue: Expression;
-}
-
-type Statement = EndStatement | AssignmentStatement;
 
 class TokenStream {
     tokens: string[];
