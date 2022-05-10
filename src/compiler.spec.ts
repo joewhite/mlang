@@ -60,40 +60,45 @@ describe("expressions", () => {
         );
     });
     describe("order of operations", () => {
-        it("+ and - are at the same level", () => {
-            expect(compile(["result = a + b - c + d"])).toStrictEqual([
-                "op add $temp0 a b",
-                "op sub $temp1 $temp0 c",
-                "op add result $temp1 d",
-            ]);
-        });
-        it("* higher precedence than +", () => {
-            expect(compile(["result = a * b + c * d"])).toStrictEqual([
-                "op mul $temp0 a b",
-                "op mul $temp1 c d",
-                "op add result $temp0 $temp1",
-            ]);
-        });
-        it("* and / are at the same level", () => {
-            expect(compile(["result = a * b / c * d"])).toStrictEqual([
-                "op mul $temp0 a b",
-                "op div $temp1 $temp0 c",
-                "op mul result $temp1 d",
-            ]);
-        });
-        it("* and % are at the same level", () => {
-            expect(compile(["result = a * b % c * d"])).toStrictEqual([
-                "op mul $temp0 a b",
-                "op mod $temp1 $temp0 c",
-                "op mul result $temp1 d",
-            ]);
-        });
-        it("* and // are at the same level", () => {
-            expect(compile(["result = a * b // c * d"])).toStrictEqual([
-                "op mul $temp0 a b",
-                "op idiv $temp1 $temp0 c",
-                "op mul result $temp1 d",
-            ]);
-        });
+        const precedence = [
+            ["* mul", "/ div", "// idiv", "% mod"],
+            ["+ add", "- sub"],
+        ];
+
+        // Equivalence within each precedence layer
+        for (const operators of precedence) {
+            const [operator1, opcode1] = operators[0].split(" ");
+            for (let i = 1; i < operators.length; ++i) {
+                const [operator2, opcode2] = operators[i].split(" ");
+                it(`"${operator1}" == "${operator2}"`, () => {
+                    expect(
+                        compile([
+                            `result = a ${operator1} b ${operator2} c ${operator1} d`,
+                        ])
+                    ).toStrictEqual([
+                        `op ${opcode1} $temp0 a b`,
+                        `op ${opcode2} $temp1 $temp0 c`,
+                        `op ${opcode1} result $temp1 d`,
+                    ]);
+                });
+            }
+        }
+
+        // Precedence between layers
+        for (let i = 0; i < precedence.length - 1; ++i) {
+            const [operator1, opcode1] = precedence[i][0].split(" ");
+            const [operator2, opcode2] = precedence[i + 1][0].split(" ");
+            it(`"${operator1}" > "${operator2}"`, () => {
+                expect(
+                    compile([
+                        `result = a ${operator1} b ${operator2} c ${operator1} d`,
+                    ])
+                ).toStrictEqual([
+                    `op ${opcode1} $temp0 a b`,
+                    `op ${opcode1} $temp1 c d`,
+                    `op ${opcode2} result $temp0 $temp1`,
+                ]);
+            });
+        }
     });
 });
