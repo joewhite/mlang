@@ -4,13 +4,32 @@ class UnreachableCaseError extends Error {
     }
 }
 
+function nextToken(line: string): string | undefined {
+    const numberMatches = /^(\d+(\.\d+)?)/.exec(line);
+    if (numberMatches) {
+        return numberMatches[1];
+    }
+
+    const identifierMatches = /^(\w+)/.exec(line);
+    if (identifierMatches) {
+        return identifierMatches[1];
+    }
+
+    for (const token of operatorsLongestFirst) {
+        if (line.startsWith(token)) {
+            return token;
+        }
+    }
+
+    return undefined;
+}
+
 function lineToTokens(line: string): string[] {
     const results: string[] = [];
 
     while (line !== "") {
-        const matches = /^(\w+|[-+*%=()]|\/\/?)/.exec(line);
-        if (matches) {
-            const match = matches[1];
+        const match = nextToken(line);
+        if (match) {
             results.push(match);
             line = line.substring(match.length).trim();
         } else {
@@ -27,20 +46,44 @@ function lineToTokens(line: string): string[] {
 const additiveOperators = {
     "+": "add",
     "-": "sub",
-};
+} as const;
 const multiplicativeOperators = {
     "*": "mul",
     "/": "div",
     "%": "mod",
     "//": "idiv",
-};
+} as const;
 const binaryOperators = {
     ...additiveOperators,
     ...multiplicativeOperators,
-};
+} as const;
 /* eslint-enable @typescript-eslint/naming-convention */
 
 type BinaryOperator = keyof typeof binaryOperators;
+
+const assignmentOperators = ["="] as const;
+const parentheticalOperators = ["(", ")"] as const;
+
+const operatorsLongestFirst: readonly string[] = (function () {
+    const tokens = [
+        ...assignmentOperators,
+        ...parentheticalOperators,
+        ...Object.keys(binaryOperators),
+    ];
+    tokens.sort((a, b) => {
+        // Reversed - longest first
+        if (a.length < b.length) {
+            return 1;
+        }
+
+        if (a.length > b.length) {
+            return -1;
+        }
+
+        return 0;
+    });
+    return tokens;
+})();
 
 interface BinaryOperation {
     type: "binaryOperation";
