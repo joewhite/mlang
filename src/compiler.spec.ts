@@ -10,6 +10,17 @@ describe("given trivial program", () => {
         expect(compile(["end"])).toStrictEqual(["end"]);
     });
 });
+describe("print statement", () => {
+    it("accepts values", () => {
+        expect(compile(["print 1"])).toStrictEqual(["print 1"]);
+    });
+    it("accepts expressions", () => {
+        expect(compile(["print 1 + 2"])).toStrictEqual([
+            "op add $temp0 1 2",
+            "print $temp0",
+        ]);
+    });
+});
 it("handles simple assignment", () => {
     expect(compile(["value = 1"])).toStrictEqual(["set value 1"]);
 });

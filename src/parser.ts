@@ -120,6 +120,12 @@ function parseStatement(tokens: TokenStream): Statement {
         return { type: "end" };
     }
 
+    if (tokens.peek(0, "print")) {
+        tokens.next();
+        const value = parseExpression(tokens);
+        return { type: "print", value };
+    }
+
     if (tokens.peek(1, "=")) {
         const lvalue = tokens.next();
         tokens.next();

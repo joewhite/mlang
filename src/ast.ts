@@ -23,14 +23,19 @@ export type Expression = string | UnaryOperation | BinaryOperation;
 
 // Statements
 
-export interface EndStatement {
-    readonly type: "end";
-}
-
 export interface AssignmentStatement {
     readonly type: "assignment";
     readonly lvalue: string;
     readonly rvalue: Expression;
 }
 
-export type Statement = EndStatement | AssignmentStatement;
+export interface EndStatement {
+    readonly type: "end";
+}
+
+export interface PrintStatement {
+    readonly type: "print";
+    readonly value: Expression;
+}
+
+export type Statement = AssignmentStatement | EndStatement | PrintStatement;

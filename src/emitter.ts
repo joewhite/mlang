@@ -64,6 +64,12 @@ class Emitter {
             case "end":
                 this.instructions.push(`end`);
                 break;
+            case "print": {
+                const value = this.resolveExpressionToVariable(statement.value);
+                this.instructions.push(`print ${value}`);
+                break;
+            }
+
             default:
                 throw new UnreachableCaseError(type);
         }
