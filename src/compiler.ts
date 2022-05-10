@@ -1,8 +1,4 @@
-class UnreachableCaseError extends Error {
-    constructor(_: never) {
-        super();
-    }
-}
+import { UnreachableCaseError } from "./utils";
 
 function nextToken(line: string): string | undefined {
     const numberMatches = /^(\d+(\.\d+)?)/.exec(line);
