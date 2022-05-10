@@ -1,3 +1,10 @@
+import {
+    additiveOperators,
+    assignmentOperators,
+    binaryOperators,
+    multiplicativeOperators,
+    parentheticalOperators,
+} from "./operators";
 import { UnreachableCaseError } from "./utils";
 
 function nextToken(line: string): string | undefined {
@@ -38,27 +45,7 @@ function lineToTokens(line: string): string[] {
 
 // Expressions
 
-/* eslint-disable @typescript-eslint/naming-convention */
-const additiveOperators = {
-    "+": "add",
-    "-": "sub",
-} as const;
-const multiplicativeOperators = {
-    "*": "mul",
-    "/": "div",
-    "%": "mod",
-    "//": "idiv",
-} as const;
-const binaryOperators = {
-    ...additiveOperators,
-    ...multiplicativeOperators,
-} as const;
-/* eslint-enable @typescript-eslint/naming-convention */
-
-type BinaryOperator = keyof typeof binaryOperators;
-
-const assignmentOperators = ["="] as const;
-const parentheticalOperators = ["(", ")"] as const;
+export type BinaryOperator = keyof typeof binaryOperators;
 
 const operatorsLongestFirst: readonly string[] = (function () {
     const tokens = [
