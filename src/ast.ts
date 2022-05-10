@@ -1,6 +1,14 @@
+import { binaryOperators, unaryOperators } from "./operators";
+
 // Expressions
 
-import { binaryOperators } from "./operators";
+export type UnaryOperator = typeof unaryOperators[0];
+
+export interface UnaryOperation {
+    type: "unaryOperation";
+    operator: UnaryOperator;
+    value: Expression;
+}
 
 export type BinaryOperator = keyof typeof binaryOperators;
 
@@ -11,7 +19,7 @@ export interface BinaryOperation {
     rvalue: Expression;
 }
 
-export type Expression = string | BinaryOperation;
+export type Expression = string | UnaryOperation | BinaryOperation;
 
 // Statements
 

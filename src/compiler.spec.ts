@@ -65,7 +65,7 @@ describe("values", () => {
 });
 describe("expressions", () => {
     describe("operators", () => {
-        function itHandles(operator: string, opcode: string) {
+        function itDoesBinary(operator: string, opcode: string) {
             it(`${operator} (single)`, () => {
                 expect(compile([`result = a ${operator} b`])).toStrictEqual([
                     `op ${opcode} result a b`,
@@ -84,12 +84,24 @@ describe("expressions", () => {
             });
         }
 
-        itHandles("+", "add");
-        itHandles("-", "sub");
-        itHandles("*", "mul");
-        itHandles("/", "div");
-        itHandles("%", "mod");
-        itHandles("//", "idiv");
+        it("unary - (single)", () => {
+            expect(compile(["result = -a"])).toStrictEqual([
+                "op sub result 0 a",
+            ]);
+        });
+        it("unary - (multiple)", () => {
+            expect(compile(["result = - -a"])).toStrictEqual([
+                "op sub $temp0 0 a",
+                "op sub result 0 $temp0",
+            ]);
+        });
+
+        itDoesBinary("+", "add");
+        itDoesBinary("-", "sub");
+        itDoesBinary("*", "mul");
+        itDoesBinary("/", "div");
+        itDoesBinary("%", "mod");
+        itDoesBinary("//", "idiv");
     });
     it("handles parentheses", () => {
         expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([

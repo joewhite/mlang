@@ -1,5 +1,16 @@
-import { BinaryOperator, Expression, Statement } from "./ast";
-import { additiveOperators, multiplicativeOperators } from "./operators";
+import { BinaryOperator, Expression, Statement, UnaryOperator } from "./ast";
+import {
+    additiveOperators,
+    multiplicativeOperators,
+    unaryOperators,
+} from "./operators";
+
+// Precedence names ("parseSomePrecedence" methods below) are borrowed from
+// the C# compiler's source code, since C# has a pretty sane order of
+// precedence. Look for "private enum Precedence" in:
+// https://github.com/dotnet/roslyn/blob/main/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs
+// This code is based on revision:
+// https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
 
 class TokenStream {
     tokens: string[];
@@ -10,12 +21,19 @@ class TokenStream {
 
     peek(
         offset: number,
-        expectedValue: string | ((value: string) => boolean)
+        expectedValue: string | readonly string[] | ((value: string) => boolean)
     ): boolean {
         const token = this.tokens[offset];
-        return typeof expectedValue === "string"
-            ? token === expectedValue
-            : expectedValue(token);
+
+        if (typeof expectedValue === "string") {
+            return token === expectedValue;
+        }
+
+        if (typeof expectedValue === "function") {
+            return expectedValue(token);
+        }
+
+        return expectedValue.includes(token);
     }
 
     next(expectedToken?: string): string {
@@ -51,7 +69,17 @@ function parseValue(tokens: TokenStream): string {
     return value;
 }
 
-function parseFactor(tokens: TokenStream): Expression {
+function parseUnary(tokens: TokenStream): Expression {
+    if (tokens.peek(0, unaryOperators)) {
+        const operator = tokens.next() as UnaryOperator;
+        const value = parseUnary(tokens);
+        return { type: "unaryOperation", operator, value };
+    }
+
+    return parseValue(tokens);
+}
+
+function parseAdditive(tokens: TokenStream): Expression {
     if (tokens.peek(0, "(")) {
         tokens.next("(");
         const parenthesizedExpression = parseExpression(tokens);
@@ -59,15 +87,15 @@ function parseFactor(tokens: TokenStream): Expression {
         return parenthesizedExpression;
     }
 
-    return parseValue(tokens);
+    return parseUnary(tokens);
 }
 
-function parseTerm(tokens: TokenStream): Expression {
-    let result: Expression = parseFactor(tokens);
+function parseMultiplicative(tokens: TokenStream): Expression {
+    let result: Expression = parseAdditive(tokens);
 
     while (tokens.peek(0, (token) => token in multiplicativeOperators)) {
         const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseFactor(tokens);
+        const rvalue = parseAdditive(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
 
@@ -75,11 +103,11 @@ function parseTerm(tokens: TokenStream): Expression {
 }
 
 function parseExpression(tokens: TokenStream): Expression {
-    let result: Expression = parseTerm(tokens);
+    let result: Expression = parseMultiplicative(tokens);
 
     while (tokens.peek(0, (token) => token in additiveOperators)) {
         const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseTerm(tokens);
+        const rvalue = parseMultiplicative(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
 

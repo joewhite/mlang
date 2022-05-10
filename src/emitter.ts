@@ -31,6 +31,22 @@ class Emitter {
             return;
         }
 
+        if (value.type === "unaryOperation") {
+            const { operator } = value;
+            switch (operator) {
+                case "-": {
+                    const opValue = this.resolveExpressionToVariable(
+                        value.value
+                    );
+                    this.instructions.push(`op sub ${target()} 0 ${opValue}`);
+                    return;
+                }
+
+                default:
+                    throw new UnreachableCaseError(operator);
+            }
+        }
+
         const lvalue = this.resolveExpressionToVariable(value.lvalue);
         const operation = binaryOperators[value.operator];
         const rvalue = this.resolveExpressionToVariable(value.rvalue);
