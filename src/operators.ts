@@ -17,3 +17,9 @@ export const binaryOperators = {
 
 export const assignmentOperators = ["="] as const;
 export const parentheticalOperators = ["(", ")"] as const;
+
+export const allOperators = [
+    ...Object.keys(binaryOperators),
+    ...assignmentOperators,
+    ...parentheticalOperators,
+] as const;

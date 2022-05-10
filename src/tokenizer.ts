@@ -1,15 +1,7 @@
-import {
-    assignmentOperators,
-    binaryOperators,
-    parentheticalOperators,
-} from "./operators";
+import { allOperators } from "./operators";
 
 const operatorsLongestFirst: readonly string[] = (function () {
-    const tokens = [
-        ...assignmentOperators,
-        ...parentheticalOperators,
-        ...Object.keys(binaryOperators),
-    ];
+    const tokens = [...allOperators];
     tokens.sort((a, b) => {
         // Reversed - longest first
         if (a.length < b.length) {
