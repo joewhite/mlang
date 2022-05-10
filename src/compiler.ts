@@ -7,6 +7,27 @@ import {
 } from "./operators";
 import { UnreachableCaseError } from "./utils";
 
+const operatorsLongestFirst: readonly string[] = (function () {
+    const tokens = [
+        ...assignmentOperators,
+        ...parentheticalOperators,
+        ...Object.keys(binaryOperators),
+    ];
+    tokens.sort((a, b) => {
+        // Reversed - longest first
+        if (a.length < b.length) {
+            return 1;
+        }
+
+        if (a.length > b.length) {
+            return -1;
+        }
+
+        return 0;
+    });
+    return tokens;
+})();
+
 function nextToken(line: string): string | undefined {
     const numberMatches = /^(\d+(\.\d+)?)/.exec(line);
     if (numberMatches) {
@@ -46,27 +67,6 @@ function lineToTokens(line: string): string[] {
 // Expressions
 
 export type BinaryOperator = keyof typeof binaryOperators;
-
-const operatorsLongestFirst: readonly string[] = (function () {
-    const tokens = [
-        ...assignmentOperators,
-        ...parentheticalOperators,
-        ...Object.keys(binaryOperators),
-    ];
-    tokens.sort((a, b) => {
-        // Reversed - longest first
-        if (a.length < b.length) {
-            return 1;
-        }
-
-        if (a.length > b.length) {
-            return -1;
-        }
-
-        return 0;
-    });
-    return tokens;
-})();
 
 interface BinaryOperation {
     type: "binaryOperation";
