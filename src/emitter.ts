@@ -2,9 +2,20 @@ import { Expression, Statement } from "./ast";
 import { binaryOperators } from "./operators";
 import { UnreachableCaseError } from "./utils";
 
+interface JumpInstruction {
+    readonly type: "jump";
+    readonly label: string;
+    readonly operation: string;
+    readonly lvalue: string;
+    readonly rvalue: string;
+}
+
+type Instruction = string | JumpInstruction;
+
 class Emitter {
     private nextTempVariableNumber = 0;
-    private readonly instructions: string[] = [];
+    private readonly instructions: Instruction[] = [];
+    private readonly labels: Map<string, number> = new Map();
 
     resolveExpressionToVariable(expression: Expression): string {
         if (typeof expression === "string") {
@@ -64,6 +75,22 @@ class Emitter {
             case "end":
                 this.instructions.push(`end`);
                 break;
+            case "goto":
+                this.instructions.push({
+                    type: "jump",
+                    label: statement.label,
+                    operation: "always",
+                    lvalue: "0",
+                    rvalue: "0",
+                });
+                break;
+            case "label":
+                if (this.labels.has(statement.label)) {
+                    throw new Error(`Duplicate label "${statement.label}"`);
+                }
+
+                this.labels.set(statement.label, this.instructions.length);
+                break;
             case "print": {
                 const value = this.resolveExpressionToVariable(statement.value);
                 this.instructions.push(`print ${value}`);
@@ -75,8 +102,32 @@ class Emitter {
         }
     }
 
+    resolveInstruction(instruction: Instruction): string {
+        if (typeof instruction === "string") {
+            return instruction;
+        }
+
+        switch (instruction.type) {
+            case "jump": {
+                const labelOffset = this.labels.get(instruction.label);
+                if (labelOffset === undefined) {
+                    throw new Error(`Unknown label "${instruction.label}"`);
+                }
+
+                // If we would jump past the end, jump to the beginning instead
+                const jumpOffset =
+                    labelOffset >= this.instructions.length ? 0 : labelOffset;
+
+                return `jump ${jumpOffset} ${instruction.operation} ${instruction.lvalue} ${instruction.rvalue}`;
+            }
+
+            default:
+                throw new UnreachableCaseError(instruction.type);
+        }
+    }
+
     getInstructions(): readonly string[] {
-        return this.instructions;
+        return this.instructions.map(this.resolveInstruction.bind(this));
     }
 }
 

@@ -16,12 +16,14 @@ export const binaryOperators = {
 /* eslint-enable @typescript-eslint/naming-convention */
 
 export const assignmentOperators = ["="] as const;
+export const labelOperators = [":"] as const;
 export const parentheticalOperators = ["(", ")"] as const;
 export const unaryOperators = ["-"] as const;
 
 export const allOperators = [
     ...Object.keys(binaryOperators),
     ...assignmentOperators,
+    ...labelOperators,
     ...parentheticalOperators,
     ...unaryOperators,
 ] as const;

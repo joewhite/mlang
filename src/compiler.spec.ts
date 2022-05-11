@@ -20,6 +20,11 @@ describe("ignored lines", () => {
         ]);
     });
 });
+it("gives syntax error on unrecognized input", () => {
+    expect(() => compile(["print 1", "lorem ipsum"])).toThrowError(
+        "Unrecognized syntax in line 2: lorem ipsum"
+    );
+});
 describe("print statement", () => {
     it("accepts values", () => {
         expect(compile(["print 1"])).toStrictEqual(["print 1"]);
@@ -203,5 +208,34 @@ describe("expressions", () => {
                 ]);
             });
         }
+    });
+});
+describe("goto", () => {
+    it("ignores unused labels", () => {
+        expect(compile(["label1:", "end"])).toStrictEqual(["end"]);
+    });
+    it("errors on unknown label", () => {
+        expect(() => compile(["goto label1"])).toThrowError(
+            `Unknown label "label1"`
+        );
+    });
+    it("errors on duplicate label", () => {
+        expect(() => compile(["label1:", "label1:"])).toThrowError(
+            `Duplicate label "label1"`
+        );
+    });
+    it("can goto a label mid-script", () => {
+        expect(
+            compile(["print 1", "label1:", "print 2", "goto label1"])
+        ).toStrictEqual([
+            "print 1", // Offset 0
+            "print 2", // Offset 1, aka label1
+            "jump 1 always 0 0",
+        ]);
+    });
+    it("wraps around if label is at the end of the script", () => {
+        expect(
+            compile(["print 1", "goto label1", "print 2", "label1:"])
+        ).toStrictEqual(["print 1", "jump 0 always 0 0", "print 2"]);
     });
 });

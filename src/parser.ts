@@ -4,7 +4,7 @@ import {
     multiplicativeOperators,
     unaryOperators,
 } from "./operators";
-import { Line } from "./tokenizer";
+import { identifierRegex, Line, numberRegex } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
 // the C# compiler's source code, since C# has a pretty sane order of
@@ -14,10 +14,12 @@ import { Line } from "./tokenizer";
 // https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
 
 class TokenStream {
-    tokens: string[];
+    readonly line: Line;
+    private readonly tokens: string[];
 
-    constructor(tokens: readonly string[]) {
-        this.tokens = [...tokens];
+    constructor(line: Line) {
+        this.line = line;
+        this.tokens = [...line.tokens];
     }
 
     peek(
@@ -60,14 +62,25 @@ class TokenStream {
     }
 }
 
-function parseValue(tokens: TokenStream): string {
+function parseAtom(
+    description: string,
+    tokens: TokenStream,
+    ...regexes: RegExp[]
+) {
     const value = tokens.next();
-    const valueMatches = /^(\w|-\d|-?\.\d)/.exec(value);
-    if (!valueMatches) {
-        throw new Error(`Expected value but found: ${value}`);
+    if (!regexes.some((regex) => regex.exec(value))) {
+        throw new Error(`Expected ${description} but found: ${value}`);
     }
 
     return value;
+}
+
+function parseIdentifier(tokens: TokenStream): string {
+    return parseAtom("identifier", tokens, identifierRegex);
+}
+
+function parseValue(tokens: TokenStream): string {
+    return parseAtom("value", tokens, numberRegex, identifierRegex);
 }
 
 function parseUnary(tokens: TokenStream): Expression {
@@ -116,9 +129,21 @@ function parseExpression(tokens: TokenStream): Expression {
 }
 
 function parseStatement(tokens: TokenStream): Statement {
+    if (tokens.peek(1, ":")) {
+        const label = parseIdentifier(tokens);
+        tokens.next(":");
+        return { type: "label", label };
+    }
+
     if (tokens.peek(0, "end")) {
         tokens.next();
         return { type: "end" };
+    }
+
+    if (tokens.peek(0, "goto")) {
+        tokens.next();
+        const label = parseIdentifier(tokens);
+        return { type: "goto", label };
     }
 
     if (tokens.peek(0, "print")) {
@@ -134,7 +159,9 @@ function parseStatement(tokens: TokenStream): Statement {
         return { type: "assignment", lvalue, rvalue };
     }
 
-    throw new Error("Syntax error");
+    throw new Error(
+        `Unrecognized syntax in line ${tokens.line.lineNumber}: ${tokens.line.text}`
+    );
 }
 
 function lineToStatement(line: Line): Statement {
@@ -142,7 +169,7 @@ function lineToStatement(line: Line): Statement {
         throw new Error("Invalid indentation");
     }
 
-    const tokenStream = new TokenStream(line.tokens);
+    const tokenStream = new TokenStream(line);
 
     const statement = parseStatement(tokenStream);
     tokenStream.verifyEmpty();

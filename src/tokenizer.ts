@@ -1,6 +1,19 @@
 import { allOperators } from "./operators";
 
+const leadingNumberRegex = /^(-?\d+(\.\d+)?|-?\.\d+)/;
+const leadingIdentifierRegex = /^([A-Za-z_]\w*)/;
+export const numberRegex = new RegExp(
+    leadingNumberRegex.source + "$",
+    leadingNumberRegex.flags
+);
+export const identifierRegex = new RegExp(
+    leadingIdentifierRegex.source + "$",
+    leadingIdentifierRegex.flags
+);
+
 export interface Line {
+    readonly lineNumber: number;
+    readonly text: string;
     readonly indent: number;
     readonly tokens: string[];
 }
@@ -23,12 +36,12 @@ const operatorsLongestFirst: readonly string[] = (function () {
 })();
 
 function nextToken(line: string): string | undefined {
-    const numberMatches = /^(-?\d+(\.\d+)?|-?\.\d+)/.exec(line);
+    const numberMatches = leadingNumberRegex.exec(line);
     if (numberMatches) {
         return numberMatches[1];
     }
 
-    const identifierMatches = /^(\w+)/.exec(line);
+    const identifierMatches = leadingIdentifierRegex.exec(line);
     if (identifierMatches) {
         return identifierMatches[1];
     }
@@ -42,7 +55,7 @@ function nextToken(line: string): string | undefined {
     return undefined;
 }
 
-function stringToLine(text: string): Line | undefined {
+function stringToLine(text: string, index: number): Line | undefined {
     const dedentedText = text.trimStart();
     if (dedentedText === "" || dedentedText.startsWith("#")) {
         return undefined;
@@ -62,7 +75,7 @@ function stringToLine(text: string): Line | undefined {
         }
     }
 
-    return { indent, tokens };
+    return { lineNumber: index + 1, text, indent, tokens };
 }
 
 export function stringsToLines(text: string[]): Line[] {
