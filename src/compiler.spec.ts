@@ -10,6 +10,16 @@ describe("given trivial program", () => {
         expect(compile(["end"])).toStrictEqual(["end"]);
     });
 });
+describe("ignored lines", () => {
+    it("ignores blank lines", () => {
+        expect(compile(["", "end", ""])).toStrictEqual(["end"]);
+    });
+    it("ignores comments", () => {
+        expect(compile(["# comment 1", "end", "# comment 2"])).toStrictEqual([
+            "end",
+        ]);
+    });
+});
 describe("print statement", () => {
     it("accepts values", () => {
         expect(compile(["print 1"])).toStrictEqual(["print 1"]);

@@ -42,11 +42,16 @@ function nextToken(line: string): string | undefined {
     return undefined;
 }
 
-function stringToLine(text: string): Line {
-    const tokens: string[] = [];
+function stringToLine(text: string): Line | undefined {
+    const dedentedText = text.trimStart();
+    if (dedentedText === "" || dedentedText.startsWith("#")) {
+        return undefined;
+    }
 
-    let remainingText = text.trimStart();
-    const indent = text.length - remainingText.length;
+    const tokens: string[] = [];
+    const indent = text.length - dedentedText.length;
+
+    let remainingText = dedentedText;
     while (remainingText !== "") {
         const match = nextToken(remainingText);
         if (match) {
@@ -61,5 +66,5 @@ function stringToLine(text: string): Line {
 }
 
 export function stringsToLines(text: string[]): Line[] {
-    return text.map(stringToLine);
+    return text.map(stringToLine).filter((line) => line) as Line[];
 }
