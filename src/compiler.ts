@@ -1,9 +1,9 @@
 import { emit } from "./emitter";
-import { lineToStatement } from "./parser";
-import { stringToLine } from "./tokenizer";
+import { linesToStatements } from "./parser";
+import { stringsToLines } from "./tokenizer";
 
 export function compile(source: string[]): readonly string[] {
-    const tokens = source.map(stringToLine);
-    const statements = tokens.map(lineToStatement);
+    const lines = stringsToLines(source);
+    const statements = linesToStatements(lines);
     return emit(statements);
 }

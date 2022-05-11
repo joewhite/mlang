@@ -137,7 +137,7 @@ function parseStatement(tokens: TokenStream): Statement {
     throw new Error("Syntax error");
 }
 
-export function lineToStatement(line: Line): Statement {
+function lineToStatement(line: Line): Statement {
     if (line.indent > 0) {
         throw new Error("Invalid indentation");
     }
@@ -148,4 +148,8 @@ export function lineToStatement(line: Line): Statement {
     tokenStream.verifyEmpty();
 
     return statement;
+}
+
+export function linesToStatements(lines: Line[]): Statement[] {
+    return lines.map(lineToStatement);
 }

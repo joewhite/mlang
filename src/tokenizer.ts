@@ -42,7 +42,7 @@ function nextToken(line: string): string | undefined {
     return undefined;
 }
 
-export function stringToLine(text: string): Line {
+function stringToLine(text: string): Line {
     const tokens: string[] = [];
 
     let remainingText = text.trimStart();
@@ -58,4 +58,8 @@ export function stringToLine(text: string): Line {
     }
 
     return { indent, tokens };
+}
+
+export function stringsToLines(text: string[]): Line[] {
+    return text.map(stringToLine);
 }
