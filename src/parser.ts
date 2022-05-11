@@ -4,6 +4,7 @@ import {
     multiplicativeOperators,
     unaryOperators,
 } from "./operators";
+import { Line } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
 // the C# compiler's source code, since C# has a pretty sane order of
@@ -136,8 +137,12 @@ function parseStatement(tokens: TokenStream): Statement {
     throw new Error("Syntax error");
 }
 
-export function tokensToStatement(tokens: string[]): Statement {
-    const tokenStream = new TokenStream(tokens);
+export function lineToStatement(line: Line): Statement {
+    if (line.indent > 0) {
+        throw new Error("Invalid indentation");
+    }
+
+    const tokenStream = new TokenStream(line.tokens);
 
     const statement = parseStatement(tokenStream);
     tokenStream.verifyEmpty();

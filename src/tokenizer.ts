@@ -1,5 +1,10 @@
 import { allOperators } from "./operators";
 
+export interface Line {
+    readonly indent: number;
+    readonly tokens: string[];
+}
+
 const operatorsLongestFirst: readonly string[] = (function () {
     const tokens = [...allOperators];
     tokens.sort((a, b) => {
@@ -37,18 +42,20 @@ function nextToken(line: string): string | undefined {
     return undefined;
 }
 
-export function lineToTokens(line: string): string[] {
-    const results: string[] = [];
+export function stringToLine(text: string): Line {
+    const tokens: string[] = [];
 
-    while (line !== "") {
-        const match = nextToken(line);
+    let remainingText = text.trimStart();
+    const indent = text.length - remainingText.length;
+    while (remainingText !== "") {
+        const match = nextToken(remainingText);
         if (match) {
-            results.push(match);
-            line = line.substring(match.length).trim();
+            tokens.push(match);
+            remainingText = remainingText.substring(match.length).trim();
         } else {
-            throw new Error("Unexpected token at: " + line);
+            throw new Error("Unexpected token at: " + remainingText);
         }
     }
 
-    return results;
+    return { indent, tokens };
 }

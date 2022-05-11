@@ -21,6 +21,15 @@ describe("print statement", () => {
         ]);
     });
 });
+it("handles multiple statements", () => {
+    expect(compile(["print 1", "print 2"])).toStrictEqual([
+        "print 1",
+        "print 2",
+    ]);
+});
+it("errors if first line is indented", () => {
+    expect(() => compile(["  print 1"])).toThrowError("Invalid indentation");
+});
 it("handles simple assignment", () => {
     expect(compile(["value = 1"])).toStrictEqual(["set value 1"]);
 });
