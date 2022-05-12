@@ -3,6 +3,11 @@ export const additiveOperators = {
     "+": "add",
     "-": "sub",
 } as const;
+export const equalityOperators = {
+    "==": "equal",
+    "!=": "notEqual",
+    "===": "strictEqual",
+};
 export const multiplicativeOperators = {
     "*": "mul",
     "/": "div",
@@ -11,6 +16,7 @@ export const multiplicativeOperators = {
 } as const;
 export const binaryOperators = {
     ...additiveOperators,
+    ...equalityOperators,
     ...multiplicativeOperators,
 } as const;
 /* eslint-enable @typescript-eslint/naming-convention */

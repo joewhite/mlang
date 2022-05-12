@@ -1,6 +1,7 @@
 import { BinaryOperator, Expression, Statement, UnaryOperator } from "./ast";
 import {
     additiveOperators,
+    equalityOperators,
     multiplicativeOperators,
     unaryOperators,
 } from "./operators";
@@ -110,7 +111,7 @@ function parseUnary(tokens: TokenStream): Expression {
 }
 
 function parseMultiplicative(tokens: TokenStream): Expression {
-    let result: Expression = parseUnary(tokens);
+    let result = parseUnary(tokens);
 
     while (tokens.peek(0, (token) => token in multiplicativeOperators)) {
         const operator = tokens.next() as BinaryOperator;
@@ -121,8 +122,8 @@ function parseMultiplicative(tokens: TokenStream): Expression {
     return result;
 }
 
-function parseExpression(tokens: TokenStream): Expression {
-    let result: Expression = parseMultiplicative(tokens);
+function parseAdditive(tokens: TokenStream): Expression {
+    let result = parseMultiplicative(tokens);
 
     while (tokens.peek(0, (token) => token in additiveOperators)) {
         const operator = tokens.next() as BinaryOperator;
@@ -132,6 +133,20 @@ function parseExpression(tokens: TokenStream): Expression {
 
     return result;
 }
+
+function parseEquality(tokens: TokenStream): Expression {
+    let result = parseAdditive(tokens);
+
+    while (tokens.peek(0, Object.keys(equalityOperators))) {
+        const operator = tokens.next() as BinaryOperator;
+        const rvalue = parseAdditive(tokens);
+        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
+    }
+
+    return result;
+}
+
+const parseExpression = parseEquality;
 
 function parseStatement(tokens: TokenStream): Statement {
     if (tokens.peek(1, ":")) {

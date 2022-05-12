@@ -154,6 +154,9 @@ describe("expressions", () => {
         itDoesBinary("/", "div");
         itDoesBinary("%", "mod");
         itDoesBinary("//", "idiv");
+        itDoesBinary("==", "equal");
+        itDoesBinary("!=", "notEqual");
+        itDoesBinary("===", "strictEqual");
     });
     it("handles parentheses", () => {
         expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
@@ -171,6 +174,7 @@ describe("expressions", () => {
         const precedence = [
             ["* mul", "/ div", "// idiv", "% mod"],
             ["+ add", "- sub"],
+            ["== equal", "!= notEqual", "=== strictEqual"],
         ];
 
         // Equivalence within each precedence layer
