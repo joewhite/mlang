@@ -198,6 +198,8 @@ describe("expressions", () => {
         const precedence = [
             ["* mul", "/ div", "// idiv", "% mod"],
             ["+ add", "- sub"],
+
+            // Not checking !== here because its codegen is more complicated
             ["== equal", "!= notEqual", "=== strictEqual"],
         ];
 
@@ -236,6 +238,15 @@ describe("expressions", () => {
                 ]);
             });
         }
+
+        it('"==" == "!=="', () => {
+            expect(compile([`result = a == b !== c == d`])).toStrictEqual([
+                `op equal $temp0 a b`,
+                `op strictEqual $temp1 $temp0 c`,
+                `op equal $temp2 $temp1 0`,
+                `op equal result $temp2 d`,
+            ]);
+        });
 
         // Other precedence checks
         it("can negate a parenthesized expression", () => {
