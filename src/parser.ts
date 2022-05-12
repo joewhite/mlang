@@ -64,6 +64,8 @@ class TokenStream {
     }
 }
 
+// Helper functions
+
 function parseAtom(
     description: string,
     tokens: TokenStream,
@@ -76,6 +78,25 @@ function parseAtom(
 
     return value;
 }
+
+function parseBinary(
+    tokens: TokenStream,
+    operatorMetadata: Record<string, { op: string } | { not: string }>,
+    next: (tokens: TokenStream) => Expression
+): Expression {
+    let result = next(tokens);
+
+    const operators = Object.keys(operatorMetadata);
+    while (tokens.peek(0, operators)) {
+        const operator = tokens.next() as BinaryOperator;
+        const rvalue = next(tokens);
+        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
+    }
+
+    return result;
+}
+
+// Main parser logic
 
 function parseIdentifier(tokens: TokenStream): string {
     return parseAtom("identifier", tokens, identifierRegex);
@@ -112,51 +133,19 @@ function parseUnary(tokens: TokenStream): Expression {
 }
 
 function parseMultiplicative(tokens: TokenStream): Expression {
-    let result = parseUnary(tokens);
-
-    while (tokens.peek(0, (token) => token in multiplicativeOperators)) {
-        const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseUnary(tokens);
-        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
-    }
-
-    return result;
+    return parseBinary(tokens, multiplicativeOperators, parseUnary);
 }
 
 function parseAdditive(tokens: TokenStream): Expression {
-    let result = parseMultiplicative(tokens);
-
-    while (tokens.peek(0, (token) => token in additiveOperators)) {
-        const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseMultiplicative(tokens);
-        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
-    }
-
-    return result;
+    return parseBinary(tokens, additiveOperators, parseMultiplicative);
 }
 
 function parseRelational(tokens: TokenStream): Expression {
-    let result = parseAdditive(tokens);
-
-    while (tokens.peek(0, Object.keys(relationalOperators))) {
-        const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseAdditive(tokens);
-        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
-    }
-
-    return result;
+    return parseBinary(tokens, relationalOperators, parseAdditive);
 }
 
 function parseEquality(tokens: TokenStream): Expression {
-    let result = parseRelational(tokens);
-
-    while (tokens.peek(0, Object.keys(equalityOperators))) {
-        const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseRelational(tokens);
-        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
-    }
-
-    return result;
+    return parseBinary(tokens, equalityOperators, parseRelational);
 }
 
 const parseExpression = parseEquality;
