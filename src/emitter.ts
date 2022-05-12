@@ -17,6 +17,10 @@ class Emitter {
     private readonly instructions: Instruction[] = [];
     private readonly labels: Map<string, number> = new Map();
 
+    nextTempVariableName(): string {
+        return `$temp${this.nextTempVariableNumber++}`;
+    }
+
     resolveExpressionToVariable(expression: Expression): string {
         if (typeof expression === "string") {
             return expression;
@@ -30,7 +34,7 @@ class Emitter {
         // read, and test expectations easier to write.
         let variable = "";
         this.assign(() => {
-            variable = `$temp${this.nextTempVariableNumber++}`;
+            variable = this.nextTempVariableName();
             return variable;
         }, expression);
         return variable;
@@ -61,9 +65,17 @@ class Emitter {
         const lvalue = this.resolveExpressionToVariable(value.lvalue);
         const operation = binaryOperators[value.operator];
         const rvalue = this.resolveExpressionToVariable(value.rvalue);
-        this.instructions.push(
-            `op ${operation} ${target()} ${lvalue} ${rvalue}`
-        );
+        if ("op" in operation) {
+            this.instructions.push(
+                `op ${operation.op} ${target()} ${lvalue} ${rvalue}`
+            );
+        } else {
+            const tempVariable = this.nextTempVariableName();
+            this.instructions.push(
+                `op ${operation.not} ${tempVariable} ${lvalue} ${rvalue}`
+            );
+            this.instructions.push(`op equal ${target()} ${tempVariable} 0`);
+        }
     }
 
     emit(statement: Statement): void {

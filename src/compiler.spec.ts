@@ -117,23 +117,35 @@ describe("values", () => {
 });
 describe("expressions", () => {
     describe("operators", () => {
-        function itDoesBinary(operator: string, opcode: string) {
+        function itDoesBinary(
+            operator: string,
+            expectedInstructionsSingle: string[],
+            expectedInstructionsMultiple: string[]
+        ) {
             it(`${operator} (single)`, () => {
-                expect(compile([`result = a ${operator} b`])).toStrictEqual([
-                    `op ${opcode} result a b`,
-                ]);
+                expect(compile([`result = a ${operator} b`])).toStrictEqual(
+                    expectedInstructionsSingle
+                );
             });
             it(`${operator} (multiple)`, () => {
                 expect(
                     compile([
                         `result = a ${operator} b ${operator} c ${operator} d`,
                     ])
-                ).toStrictEqual([
+                ).toStrictEqual(expectedInstructionsMultiple);
+            });
+        }
+
+        function itDoesSimpleBinary(operator: string, opcode: string) {
+            itDoesBinary(
+                operator,
+                [`op ${opcode} result a b`],
+                [
                     `op ${opcode} $temp0 a b`,
                     `op ${opcode} $temp1 $temp0 c`,
                     `op ${opcode} result $temp1 d`,
-                ]);
-            });
+                ]
+            );
         }
 
         it("unary - (single)", () => {
@@ -148,15 +160,27 @@ describe("expressions", () => {
             ]);
         });
 
-        itDoesBinary("+", "add");
-        itDoesBinary("-", "sub");
-        itDoesBinary("*", "mul");
-        itDoesBinary("/", "div");
-        itDoesBinary("%", "mod");
-        itDoesBinary("//", "idiv");
-        itDoesBinary("==", "equal");
-        itDoesBinary("!=", "notEqual");
-        itDoesBinary("===", "strictEqual");
+        itDoesSimpleBinary("+", "add");
+        itDoesSimpleBinary("-", "sub");
+        itDoesSimpleBinary("*", "mul");
+        itDoesSimpleBinary("/", "div");
+        itDoesSimpleBinary("%", "mod");
+        itDoesSimpleBinary("//", "idiv");
+        itDoesSimpleBinary("==", "equal");
+        itDoesSimpleBinary("!=", "notEqual");
+        itDoesSimpleBinary("===", "strictEqual");
+        itDoesBinary(
+            "!==",
+            ["op strictEqual $temp0 a b", "op equal result $temp0 0"],
+            [
+                "op strictEqual $temp0 a b",
+                "op equal $temp1 $temp0 0",
+                "op strictEqual $temp2 $temp1 c",
+                "op equal $temp3 $temp2 0",
+                "op strictEqual $temp4 $temp3 d",
+                "op equal result $temp4 0",
+            ]
+        );
     });
     it("handles parentheses", () => {
         expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([

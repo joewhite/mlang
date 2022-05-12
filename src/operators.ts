@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export const additiveOperators = {
-    "+": "add",
-    "-": "sub",
+    "+": { op: "add" },
+    "-": { op: "sub" },
 } as const;
 export const equalityOperators = {
-    "==": "equal",
-    "!=": "notEqual",
-    "===": "strictEqual",
-};
+    "==": { op: "equal" },
+    "!=": { op: "notEqual" },
+    "===": { op: "strictEqual" },
+    "!==": { not: "strictEqual" },
+} as const;
 export const multiplicativeOperators = {
-    "*": "mul",
-    "/": "div",
-    "%": "mod",
-    "//": "idiv",
+    "*": { op: "mul" },
+    "/": { op: "div" },
+    "%": { op: "mod" },
+    "//": { op: "idiv" },
 } as const;
 export const binaryOperators = {
     ...additiveOperators,
