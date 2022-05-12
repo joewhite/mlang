@@ -79,8 +79,24 @@ function parseIdentifier(tokens: TokenStream): string {
     return parseAtom("identifier", tokens, identifierRegex);
 }
 
-function parseValue(tokens: TokenStream): string {
-    return parseAtom("value", tokens, numberRegex, identifierRegex);
+function parseIdentifierOrNumber(tokens: TokenStream): string {
+    return parseAtom(
+        "identifier or number",
+        tokens,
+        numberRegex,
+        identifierRegex
+    );
+}
+
+function parseValue(tokens: TokenStream): Expression {
+    if (tokens.peek(0, "(")) {
+        tokens.next("(");
+        const parenthesizedExpression = parseExpression(tokens);
+        tokens.next(")");
+        return parenthesizedExpression;
+    }
+
+    return parseIdentifierOrNumber(tokens);
 }
 
 function parseUnary(tokens: TokenStream): Expression {
@@ -93,23 +109,12 @@ function parseUnary(tokens: TokenStream): Expression {
     return parseValue(tokens);
 }
 
-function parseAdditive(tokens: TokenStream): Expression {
-    if (tokens.peek(0, "(")) {
-        tokens.next("(");
-        const parenthesizedExpression = parseExpression(tokens);
-        tokens.next(")");
-        return parenthesizedExpression;
-    }
-
-    return parseUnary(tokens);
-}
-
 function parseMultiplicative(tokens: TokenStream): Expression {
-    let result: Expression = parseAdditive(tokens);
+    let result: Expression = parseUnary(tokens);
 
     while (tokens.peek(0, (token) => token in multiplicativeOperators)) {
         const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseAdditive(tokens);
+        const rvalue = parseUnary(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
 

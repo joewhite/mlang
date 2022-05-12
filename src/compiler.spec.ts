@@ -74,7 +74,7 @@ it("errors on extra tokens at end of line", () => {
 describe("values", () => {
     it("errors on non-value when value expected", () => {
         expect(() => compile(["value = +"])).toThrowError(
-            "Expected value but found: +"
+            "Expected identifier or number but found: +"
         );
     });
     it("accepts alphanumeric with leading alpha", () => {
@@ -208,6 +208,14 @@ describe("expressions", () => {
                 ]);
             });
         }
+
+        // Other precedence checks
+        it("can negate a parenthesized expression", () => {
+            expect(compile(["result = -(a + b)"])).toStrictEqual([
+                "op add $temp0 a b",
+                "op sub result 0 $temp0",
+            ]);
+        });
     });
 });
 describe("goto", () => {
