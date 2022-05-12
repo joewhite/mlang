@@ -162,10 +162,12 @@ describe("expressions", () => {
 
         itDoesSimpleBinary("+", "add");
         itDoesSimpleBinary("-", "sub");
+
         itDoesSimpleBinary("*", "mul");
         itDoesSimpleBinary("/", "div");
         itDoesSimpleBinary("%", "mod");
         itDoesSimpleBinary("//", "idiv");
+
         itDoesSimpleBinary("==", "equal");
         itDoesSimpleBinary("!=", "notEqual");
         itDoesSimpleBinary("===", "strictEqual");
@@ -181,6 +183,11 @@ describe("expressions", () => {
                 "op equal result $temp4 0",
             ]
         );
+
+        itDoesSimpleBinary("<", "lessThan");
+        itDoesSimpleBinary("<=", "lessThanEq");
+        itDoesSimpleBinary(">", "greaterThan");
+        itDoesSimpleBinary(">=", "greaterThanEq");
     });
     it("handles parentheses", () => {
         expect(compile(["result = (a + b) + (c + d)"])).toStrictEqual([
@@ -199,6 +206,12 @@ describe("expressions", () => {
             ["* mul", "/ div", "// idiv", "% mod"],
             ["+ add", "- sub"],
 
+            [
+                "< lessThan",
+                "<= lessThanEq",
+                "> greaterThan",
+                ">= greaterThanEq",
+            ],
             // Not checking !== here because its codegen is more complicated
             ["== equal", "!= notEqual", "=== strictEqual"],
         ];

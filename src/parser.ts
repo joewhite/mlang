@@ -3,6 +3,7 @@ import {
     additiveOperators,
     equalityOperators,
     multiplicativeOperators,
+    relationalOperators,
     unaryOperators,
 } from "./operators";
 import { identifierRegex, Line, numberRegex } from "./tokenizer";
@@ -134,12 +135,24 @@ function parseAdditive(tokens: TokenStream): Expression {
     return result;
 }
 
-function parseEquality(tokens: TokenStream): Expression {
+function parseRelational(tokens: TokenStream): Expression {
     let result = parseAdditive(tokens);
+
+    while (tokens.peek(0, Object.keys(relationalOperators))) {
+        const operator = tokens.next() as BinaryOperator;
+        const rvalue = parseAdditive(tokens);
+        result = { type: "binaryOperation", lvalue: result, operator, rvalue };
+    }
+
+    return result;
+}
+
+function parseEquality(tokens: TokenStream): Expression {
+    let result = parseRelational(tokens);
 
     while (tokens.peek(0, Object.keys(equalityOperators))) {
         const operator = tokens.next() as BinaryOperator;
-        const rvalue = parseAdditive(tokens);
+        const rvalue = parseRelational(tokens);
         result = { type: "binaryOperation", lvalue: result, operator, rvalue };
     }
 

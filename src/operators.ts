@@ -9,6 +9,12 @@ export const equalityOperators = {
     "===": { op: "strictEqual" },
     "!==": { not: "strictEqual" },
 } as const;
+export const relationalOperators = {
+    "<": { op: "lessThan" },
+    "<=": { op: "lessThanEq" },
+    ">": { op: "greaterThan" },
+    ">=": { op: "greaterThanEq" },
+} as const;
 export const multiplicativeOperators = {
     "*": { op: "mul" },
     "/": { op: "div" },
@@ -19,6 +25,7 @@ export const binaryOperators = {
     ...additiveOperators,
     ...equalityOperators,
     ...multiplicativeOperators,
+    ...relationalOperators,
 } as const;
 /* eslint-enable @typescript-eslint/naming-convention */
 
