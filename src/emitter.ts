@@ -96,6 +96,8 @@ class Emitter {
                     rvalue: "0",
                 });
                 break;
+            case "if":
+                break;
             case "label":
                 if (this.labels.has(statement.label)) {
                     throw new Error(`Duplicate label "${statement.label}"`);

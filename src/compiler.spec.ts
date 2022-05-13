@@ -299,3 +299,8 @@ describe("goto", () => {
         ).toStrictEqual(["print 1", "jump 0 always 0 0", "print 2"]);
     });
 });
+describe("if", () => {
+    it("compiles", () => {
+        expect(() => compile(["if a == b"])).not.toThrow();
+    });
+});

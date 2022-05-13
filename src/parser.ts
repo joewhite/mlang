@@ -168,6 +168,12 @@ function parseStatement(tokens: TokenStream): Statement {
         return { type: "goto", label };
     }
 
+    if (tokens.peek(0, "if")) {
+        tokens.next("if");
+        const condition = parseExpression(tokens);
+        return { type: "if", condition };
+    }
+
     if (tokens.peek(0, "print")) {
         tokens.next();
         const value = parseExpression(tokens);

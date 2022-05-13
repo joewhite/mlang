@@ -38,6 +38,11 @@ export interface GotoStatement {
     readonly label: string;
 }
 
+export interface IfHeaderStatement {
+    readonly type: "if";
+    readonly condition: Expression;
+}
+
 export interface LabelStatement {
     readonly type: "label";
     readonly label: string;
@@ -52,5 +57,6 @@ export type Statement =
     | AssignmentStatement
     | EndStatement
     | GotoStatement
+    | IfHeaderStatement
     | LabelStatement
     | PrintStatement;
