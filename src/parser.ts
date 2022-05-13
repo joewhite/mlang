@@ -15,6 +15,8 @@ import { identifierRegex, Line, numberRegex } from "./tokenizer";
 // This code is based on revision:
 // https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
 
+export type StatementWithSource = Statement & { source: Line };
+
 class TokenStream {
     readonly line: Line;
     private readonly tokens: string[];
@@ -192,19 +194,15 @@ function parseStatement(tokens: TokenStream): Statement {
     );
 }
 
-function lineToStatement(line: Line): Statement {
-    if (line.indent > 0) {
-        throw new Error("Invalid indentation");
-    }
-
+function lineToStatement(line: Line): StatementWithSource {
     const tokenStream = new TokenStream(line);
 
     const statement = parseStatement(tokenStream);
     tokenStream.verifyEmpty();
 
-    return statement;
+    return { ...statement, source: line };
 }
 
-export function linesToStatements(lines: Line[]): Statement[] {
+export function linesToStatements(lines: Line[]): StatementWithSource[] {
     return lines.map(lineToStatement);
 }
