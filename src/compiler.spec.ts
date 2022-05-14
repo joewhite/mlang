@@ -301,6 +301,8 @@ describe("goto", () => {
 });
 describe("if", () => {
     it("compiles", () => {
-        expect(() => compile(["if a == b"])).not.toThrow();
+        expect(() =>
+            compile(["if a == b", "  print 1", "print 2"])
+        ).not.toThrow();
     });
 });

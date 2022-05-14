@@ -39,6 +39,10 @@ class BlockBuilder {
     private statementToBlock(
         statement: StatementWithSource
     ): StatementWithSource {
+        if (statement.type === "if") {
+            this.parseBlockContents(statement.source.indent + 1);
+        }
+
         return statement;
     }
 
