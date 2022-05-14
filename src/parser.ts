@@ -6,7 +6,7 @@ import {
     relationalOperators,
     unaryOperators,
 } from "./operators";
-import { identifierRegex, Line, numberRegex } from "./tokenizer";
+import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
 // the C# compiler's source code, since C# has a pretty sane order of
@@ -15,13 +15,13 @@ import { identifierRegex, Line, numberRegex } from "./tokenizer";
 // This code is based on revision:
 // https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
 
-export type StatementWithSource = Statement & { source: Line };
+export type StatementWithSource = Statement & { source: InputLine };
 
 class TokenStream {
-    readonly line: Line;
+    readonly line: InputLine;
     private readonly tokens: string[];
 
-    constructor(line: Line) {
+    constructor(line: InputLine) {
         this.line = line;
         this.tokens = [...line.tokens];
     }
@@ -194,7 +194,7 @@ function parseStatement(tokens: TokenStream): Statement {
     );
 }
 
-function lineToStatement(line: Line): StatementWithSource {
+function lineToStatement(line: InputLine): StatementWithSource {
     const tokenStream = new TokenStream(line);
 
     const statement = parseStatement(tokenStream);
@@ -203,6 +203,6 @@ function lineToStatement(line: Line): StatementWithSource {
     return { ...statement, source: line };
 }
 
-export function linesToStatements(lines: Line[]): StatementWithSource[] {
+export function linesToStatements(lines: InputLine[]): StatementWithSource[] {
     return lines.map(lineToStatement);
 }

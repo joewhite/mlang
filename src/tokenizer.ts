@@ -11,7 +11,7 @@ export const identifierRegex = new RegExp(
     leadingIdentifierRegex.flags
 );
 
-export interface Line {
+export interface InputLine {
     readonly lineNumber: number;
     readonly text: string;
     readonly indent: number;
@@ -55,7 +55,7 @@ function nextToken(line: string): string | undefined {
     return undefined;
 }
 
-function stringToLine(text: string, index: number): Line | undefined {
+function stringToLine(text: string, index: number): InputLine | undefined {
     const dedentedText = text.trimStart();
     if (dedentedText === "" || dedentedText.startsWith("#")) {
         return undefined;
@@ -78,6 +78,6 @@ function stringToLine(text: string, index: number): Line | undefined {
     return { lineNumber: index + 1, text, indent, tokens };
 }
 
-export function stringsToLines(text: string[]): Line[] {
-    return text.map(stringToLine).filter((line) => line) as Line[];
+export function stringsToLines(text: string[]): InputLine[] {
+    return text.map(stringToLine).filter((line) => line) as InputLine[];
 }
