@@ -1,5 +1,5 @@
 import { Expression } from "./expressions";
-import { IfHeaderStatement, Statement } from "./parsed-lines";
+import { BareLine, IfHeaderStatement } from "./parsed-lines";
 
 export interface IfBlock {
     type: "if";
@@ -7,4 +7,4 @@ export interface IfBlock {
     ifBlock: Block[];
 }
 
-export type Block = Exclude<Statement, IfHeaderStatement> | IfBlock;
+export type Block = Exclude<BareLine, IfHeaderStatement> | IfBlock;

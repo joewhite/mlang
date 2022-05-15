@@ -31,7 +31,7 @@ export interface PrintStatement {
     readonly value: Expression;
 }
 
-export type Statement =
+export type BareLine =
     | AssignmentStatement
     | EndStatement
     | GotoStatement
@@ -39,4 +39,4 @@ export type Statement =
     | LabelStatement
     | PrintStatement;
 
-export type ParsedLine = Statement & { source: InputLine };
+export type ParsedLine = BareLine & { source: InputLine };

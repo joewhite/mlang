@@ -6,7 +6,7 @@ import {
     relationalOperators,
     unaryOperators,
 } from "./operators";
-import { ParsedLine, Statement } from "./parsed-lines";
+import { BareLine, ParsedLine } from "./parsed-lines";
 import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
@@ -151,7 +151,7 @@ function parseEquality(tokens: TokenStream): Expression {
 
 const parseExpression = parseEquality;
 
-function parseStatement(tokens: TokenStream): Statement {
+function parseLine(tokens: TokenStream): BareLine {
     if (tokens.peek(1, ":")) {
         const label = parseIdentifier(tokens);
         tokens.next(":");
@@ -196,7 +196,7 @@ function parseStatement(tokens: TokenStream): Statement {
 function lineToParsedLine(line: InputLine): ParsedLine {
     const tokenStream = new TokenStream(line);
 
-    const statement = parseStatement(tokenStream);
+    const statement = parseLine(tokenStream);
     tokenStream.verifyEmpty();
 
     return { ...statement, source: line };
