@@ -58,8 +58,7 @@ class TokenStream {
     verifyEmpty(): void {
         if (this.tokens.length) {
             throw new Error(
-                "Error parsing statement\nExpected end of line but found: " +
-                    this.tokens[0]
+                `Error parsing line\nExpected end of line but found: ${this.tokens[0]}`
             );
         }
     }
@@ -196,10 +195,10 @@ function parseLine(tokens: TokenStream): BareLine {
 function lineToParsedLine(line: InputLine): ParsedLine {
     const tokenStream = new TokenStream(line);
 
-    const statement = parseLine(tokenStream);
+    const parsedLine = parseLine(tokenStream);
     tokenStream.verifyEmpty();
 
-    return { ...statement, source: line };
+    return { ...parsedLine, source: line };
 }
 
 export function linesToParsedLines(lines: InputLine[]): ParsedLine[] {

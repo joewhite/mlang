@@ -5,7 +5,7 @@ import { stringsToLines } from "./tokenizer";
 
 export function compile(source: string[]): readonly string[] {
     const lines = stringsToLines(source);
-    const statements = linesToParsedLines(lines);
-    const blocks = parsedLinesToBlocks(statements);
+    const parsedLines = linesToParsedLines(lines);
+    const blocks = parsedLinesToBlocks(parsedLines);
     return emit(blocks);
 }
