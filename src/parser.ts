@@ -15,7 +15,7 @@ import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 // This code is based on revision:
 // https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
 
-export type StatementWithSource = Statement & { source: InputLine };
+export type ParsedLine = Statement & { source: InputLine };
 
 class TokenStream {
     readonly line: InputLine;
@@ -194,7 +194,7 @@ function parseStatement(tokens: TokenStream): Statement {
     );
 }
 
-function lineToStatement(line: InputLine): StatementWithSource {
+function lineToParsedLine(line: InputLine): ParsedLine {
     const tokenStream = new TokenStream(line);
 
     const statement = parseStatement(tokenStream);
@@ -203,6 +203,6 @@ function lineToStatement(line: InputLine): StatementWithSource {
     return { ...statement, source: line };
 }
 
-export function linesToStatements(lines: InputLine[]): StatementWithSource[] {
-    return lines.map(lineToStatement);
+export function linesToParsedLines(lines: InputLine[]): ParsedLine[] {
+    return lines.map(lineToParsedLine);
 }

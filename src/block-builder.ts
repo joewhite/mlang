@@ -1,15 +1,15 @@
 import { Statement } from "./ast";
-import { StatementWithSource } from "./parser";
+import { ParsedLine } from "./parser";
 
 class BlockBuilder {
-    private readonly statements: StatementWithSource[];
+    private readonly lines: ParsedLine[];
 
-    constructor(statements: StatementWithSource[]) {
-        this.statements = statements;
+    constructor(lines: ParsedLine[]) {
+        this.lines = lines;
     }
 
     execute(): Statement[] {
-        if (this.statements[0]?.source.indent > 0) {
+        if (this.lines[0]?.source.indent > 0) {
             throw new Error("Invalid indentation");
         }
 
@@ -17,18 +17,18 @@ class BlockBuilder {
     }
 
     private parseBlockContents(minIndent: number): Statement[] {
-        const results: StatementWithSource[] = [];
+        const results: ParsedLine[] = [];
 
-        let statement: StatementWithSource | undefined;
-        while ((statement = this.nextIfIndentIsAtLeast(minIndent))) {
+        let line: ParsedLine | undefined;
+        while ((line = this.nextIfIndentIsAtLeast(minIndent))) {
             if (
                 results.length &&
-                statement.source.indent !== results[0].source.indent
+                line.source.indent !== results[0].source.indent
             ) {
                 throw new Error("Invalid indentation");
             }
 
-            const block = this.statementToBlock(statement);
+            const block = this.lineToBlock(line);
 
             results.push(block);
         }
@@ -36,9 +36,7 @@ class BlockBuilder {
         return results;
     }
 
-    private statementToBlock(
-        statement: StatementWithSource
-    ): StatementWithSource {
+    private lineToBlock(statement: ParsedLine): ParsedLine {
         if (statement.type === "if") {
             this.parseBlockContents(statement.source.indent + 1);
         }
@@ -46,19 +44,15 @@ class BlockBuilder {
         return statement;
     }
 
-    private nextIfIndentIsAtLeast(
-        minIndent: number
-    ): StatementWithSource | undefined {
-        if (this.statements[0]?.source.indent >= minIndent) {
-            return this.statements.shift();
+    private nextIfIndentIsAtLeast(minIndent: number): ParsedLine | undefined {
+        if (this.lines[0]?.source.indent >= minIndent) {
+            return this.lines.shift();
         }
 
         return undefined;
     }
 }
 
-export function statementsToBlocks(
-    statements: StatementWithSource[]
-): Statement[] {
+export function parsedLinesToBlocks(statements: ParsedLine[]): Statement[] {
     return new BlockBuilder(statements).execute();
 }

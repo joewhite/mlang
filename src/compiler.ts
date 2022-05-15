@@ -1,11 +1,11 @@
-import { statementsToBlocks } from "./block-builder";
+import { parsedLinesToBlocks } from "./block-builder";
 import { emit } from "./emitter";
-import { linesToStatements } from "./parser";
+import { linesToParsedLines } from "./parser";
 import { stringsToLines } from "./tokenizer";
 
 export function compile(source: string[]): readonly string[] {
     const lines = stringsToLines(source);
-    const statements = linesToStatements(lines);
-    const blocks = statementsToBlocks(statements);
+    const statements = linesToParsedLines(lines);
+    const blocks = parsedLinesToBlocks(statements);
     return emit(blocks);
 }
