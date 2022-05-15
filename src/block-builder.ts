@@ -38,15 +38,13 @@ class BlockBuilder {
         return results;
     }
 
-    private lineToBlock(statement: ParsedLine): Block {
-        if (statement.type === "if") {
-            const ifBlock = this.parseBlockContents(
-                statement.source.indent + 1
-            );
-            return { type: "if", condition: statement.condition, ifBlock };
+    private lineToBlock(line: ParsedLine): Block {
+        if (line.type === "if") {
+            const ifBlock = this.parseBlockContents(line.source.indent + 1);
+            return { type: "if", condition: line.condition, ifBlock };
         }
 
-        return statement;
+        return line;
     }
 
     private nextIfIndentIsAtLeast(minIndent: number): ParsedLine | undefined {
@@ -58,6 +56,6 @@ class BlockBuilder {
     }
 }
 
-export function parsedLinesToBlocks(statements: ParsedLine[]): Block[] {
-    return new BlockBuilder(statements).execute();
+export function parsedLinesToBlocks(lines: ParsedLine[]): Block[] {
+    return new BlockBuilder(lines).execute();
 }
