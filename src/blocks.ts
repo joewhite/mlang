@@ -1,4 +1,5 @@
-import { Expression, IfHeaderStatement, Statement } from "./ast";
+import { Expression } from "./expressions";
+import { IfHeaderStatement, Statement } from "./parsed-lines";
 
 export interface IfBlock {
     type: "if";

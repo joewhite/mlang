@@ -1,5 +1,5 @@
-import { BinaryOperation, Expression } from "./ast";
 import { Block } from "./blocks";
+import { BinaryOperation, Expression } from "./expressions";
 import { binaryOperators } from "./operators";
 import { UnreachableCaseError } from "./utils";
 

@@ -1,4 +1,4 @@
-import { BinaryOperator, Expression, Statement, UnaryOperator } from "./ast";
+import { BinaryOperator, Expression, UnaryOperator } from "./expressions";
 import {
     additiveOperators,
     equalityOperators,
@@ -6,6 +6,7 @@ import {
     relationalOperators,
     unaryOperators,
 } from "./operators";
+import { Statement } from "./parsed-lines";
 import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
