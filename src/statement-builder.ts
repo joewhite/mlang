@@ -1,14 +1,14 @@
-import { Block } from "./statements";
+import { Statement } from "./statements";
 import { ParsedLine } from "./parsed-lines";
 
-class BlockBuilder {
+class StatementBuilder {
     private readonly lines: ParsedLine[];
 
     constructor(lines: ParsedLine[]) {
         this.lines = lines;
     }
 
-    execute(): Block[] {
+    execute(): Statement[] {
         if (this.lines[0]?.source.indent > 0) {
             throw new Error("Invalid indentation");
         }
@@ -16,8 +16,8 @@ class BlockBuilder {
         return this.parseBlockContents(0);
     }
 
-    private parseBlockContents(minIndent: number): Block[] {
-        const results: Block[] = [];
+    private parseBlockContents(minIndent: number): Statement[] {
+        const results: Statement[] = [];
 
         let actualIndent: number | undefined;
         let line: ParsedLine | undefined;
@@ -31,14 +31,14 @@ class BlockBuilder {
 
             actualIndent = line.source.indent;
 
-            const block = this.lineToBlock(line);
-            results.push(block);
+            const statement = this.lineToStatement(line);
+            results.push(statement);
         }
 
         return results;
     }
 
-    private lineToBlock(line: ParsedLine): Block {
+    private lineToStatement(line: ParsedLine): Statement {
         if (line.type === "if") {
             const ifBlock = this.parseBlockContents(line.source.indent + 1);
             return { type: "if", condition: line.condition, ifBlock };
@@ -56,6 +56,6 @@ class BlockBuilder {
     }
 }
 
-export function parsedLinesToBlocks(lines: ParsedLine[]): Block[] {
-    return new BlockBuilder(lines).execute();
+export function parsedLinesToStatements(lines: ParsedLine[]): Statement[] {
+    return new StatementBuilder(lines).execute();
 }

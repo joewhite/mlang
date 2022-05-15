@@ -1,6 +1,6 @@
 import { BinaryOperation, Expression } from "./expressions";
 import { binaryOperators } from "./operators";
-import { Block } from "./statements";
+import { Statement } from "./statements";
 import { UnreachableCaseError } from "./utils";
 
 interface JumpInstruction {
@@ -79,9 +79,9 @@ class Emitter {
         }
     }
 
-    emitAll(blocks: Block[]) {
-        blocks.forEach((block) => {
-            this.emit(block);
+    emitAll(statements: Statement[]) {
+        statements.forEach((statement) => {
+            this.emit(statement);
         });
     }
 
@@ -89,11 +89,11 @@ class Emitter {
         return this.instructions.map(this.resolveInstruction.bind(this));
     }
 
-    private emit(block: Block): void {
-        const { type } = block;
+    private emit(statement: Statement): void {
+        const { type } = statement;
         switch (type) {
             case "assignment":
-                this.assign(() => block.lvalue, block.rvalue);
+                this.assign(() => statement.lvalue, statement.rvalue);
                 break;
 
             case "end":
@@ -103,7 +103,7 @@ class Emitter {
             case "goto":
                 this.instructions.push({
                     type: "jump",
-                    label: block.label,
+                    label: statement.label,
                     operator: "always",
                     lvalue: "0",
                     rvalue: "0",
@@ -119,10 +119,10 @@ class Emitter {
                     type: "jump",
                     label: ifLabel,
                     // MASSIVE HACK
-                    lvalue: (block.condition as BinaryOperation)
+                    lvalue: (statement.condition as BinaryOperation)
                         .lvalue as string,
                     operator: "equal",
-                    rvalue: (block.condition as BinaryOperation)
+                    rvalue: (statement.condition as BinaryOperation)
                         .rvalue as string,
                 });
 
@@ -137,22 +137,22 @@ class Emitter {
 
                 // Start of "if" block
                 this.addLabel(ifLabel);
-                this.emitAll(block.ifBlock);
+                this.emitAll(statement.ifBlock);
 
                 this.addLabel(endLabel);
                 break;
             }
 
             case "label":
-                if (this.labels.has(block.label)) {
-                    throw new Error(`Duplicate label "${block.label}"`);
+                if (this.labels.has(statement.label)) {
+                    throw new Error(`Duplicate label "${statement.label}"`);
                 }
 
-                this.addLabel(block.label);
+                this.addLabel(statement.label);
                 break;
 
             case "print": {
-                const value = this.resolveExpressionToVariable(block.value);
+                const value = this.resolveExpressionToVariable(statement.value);
                 this.instructions.push(`print ${value}`);
                 break;
             }
@@ -191,8 +191,8 @@ class Emitter {
     }
 }
 
-export function emit(blocks: Block[]): readonly string[] {
+export function emit(statements: Statement[]): readonly string[] {
     const emitter = new Emitter();
-    emitter.emitAll(blocks);
+    emitter.emitAll(statements);
     return emitter.getInstructions();
 }
