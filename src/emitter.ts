@@ -1,4 +1,5 @@
-import { Expression, Statement } from "./ast";
+import { Expression } from "./ast";
+import { Block } from "./blocks";
 import { binaryOperators } from "./operators";
 import { UnreachableCaseError } from "./utils";
 
@@ -78,7 +79,7 @@ class Emitter {
         }
     }
 
-    emit(statement: Statement): void {
+    emit(statement: Block): void {
         const { type } = statement;
         switch (type) {
             case "assignment":
@@ -145,10 +146,10 @@ class Emitter {
     }
 }
 
-export function emit(statements: Statement[]): readonly string[] {
+export function emit(blocks: Block[]): readonly string[] {
     const emitter = new Emitter();
-    statements.forEach((statement) => {
-        emitter.emit(statement);
+    blocks.forEach((block) => {
+        emitter.emit(block);
     });
     return emitter.getInstructions();
 }

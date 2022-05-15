@@ -1,4 +1,4 @@
-import { Statement } from "./ast";
+import { Block } from "./blocks";
 import { ParsedLine } from "./parser";
 
 class BlockBuilder {
@@ -8,7 +8,7 @@ class BlockBuilder {
         this.lines = lines;
     }
 
-    execute(): Statement[] {
+    execute(): Block[] {
         if (this.lines[0]?.source.indent > 0) {
             throw new Error("Invalid indentation");
         }
@@ -16,27 +16,29 @@ class BlockBuilder {
         return this.parseBlockContents(0);
     }
 
-    private parseBlockContents(minIndent: number): Statement[] {
-        const results: ParsedLine[] = [];
+    private parseBlockContents(minIndent: number): Block[] {
+        const results: Block[] = [];
 
+        let actualIndent: number | undefined;
         let line: ParsedLine | undefined;
         while ((line = this.nextIfIndentIsAtLeast(minIndent))) {
             if (
-                results.length &&
-                line.source.indent !== results[0].source.indent
+                actualIndent !== undefined &&
+                line.source.indent !== actualIndent
             ) {
                 throw new Error("Invalid indentation");
             }
 
-            const block = this.lineToBlock(line);
+            actualIndent = line.source.indent;
 
+            const block = this.lineToBlock(line);
             results.push(block);
         }
 
         return results;
     }
 
-    private lineToBlock(statement: ParsedLine): ParsedLine {
+    private lineToBlock(statement: ParsedLine): Block {
         if (statement.type === "if") {
             this.parseBlockContents(statement.source.indent + 1);
         }
@@ -53,6 +55,6 @@ class BlockBuilder {
     }
 }
 
-export function parsedLinesToBlocks(statements: ParsedLine[]): Statement[] {
+export function parsedLinesToBlocks(statements: ParsedLine[]): Block[] {
     return new BlockBuilder(statements).execute();
 }
