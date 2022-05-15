@@ -1,3 +1,9 @@
-import { Statement } from "./ast";
+import { Expression, IfHeaderStatement, Statement } from "./ast";
 
-export type Block = Statement;
+export interface IfBlock {
+    type: "if";
+    condition: Expression;
+    ifBlock: Block[];
+}
+
+export type Block = Exclude<Statement, IfHeaderStatement> | IfBlock;

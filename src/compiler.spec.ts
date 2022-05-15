@@ -300,9 +300,38 @@ describe("goto", () => {
     });
 });
 describe("if", () => {
-    it("compiles", () => {
-        expect(() =>
-            compile(["if a == b", "  print 1", "print 2"])
-        ).not.toThrow();
+    it("works without else", () => {
+        expect(
+            compile(["if a == b", "  print 1", "  print 2", "print 3"])
+        ).toStrictEqual([
+            "jump 2 equal a b",
+            "jump 4 always 0 0",
+            "print 1",
+            "print 2",
+            "print 3",
+        ]);
+    });
+    it("supports nested ifs", () => {
+        expect(
+            compile([
+                "if a == b",
+                "  print 1",
+                "  if c == d",
+                "    print 2",
+                "    print 3",
+                "  print 4",
+                "print 5",
+            ])
+        ).toStrictEqual([
+            "jump 2 equal a b",
+            "jump 8 always 0 0",
+            "print 1",
+            "jump 5 equal c d",
+            "jump 7 always 0 0",
+            "print 2",
+            "print 3",
+            "print 4",
+            "print 5",
+        ]);
     });
 });

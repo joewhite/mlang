@@ -40,7 +40,10 @@ class BlockBuilder {
 
     private lineToBlock(statement: ParsedLine): Block {
         if (statement.type === "if") {
-            this.parseBlockContents(statement.source.indent + 1);
+            const ifBlock = this.parseBlockContents(
+                statement.source.indent + 1
+            );
+            return { type: "if", condition: statement.condition, ifBlock };
         }
 
         return statement;

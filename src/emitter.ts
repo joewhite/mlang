@@ -1,4 +1,4 @@
-import { Expression } from "./ast";
+import { BinaryOperation, Expression } from "./ast";
 import { Block } from "./blocks";
 import { binaryOperators } from "./operators";
 import { UnreachableCaseError } from "./utils";
@@ -6,7 +6,7 @@ import { UnreachableCaseError } from "./utils";
 interface JumpInstruction {
     readonly type: "jump";
     readonly label: string;
-    readonly operation: string;
+    readonly operator: string;
     readonly lvalue: string;
     readonly rvalue: string;
 }
@@ -14,12 +14,12 @@ interface JumpInstruction {
 type Instruction = string | JumpInstruction;
 
 class Emitter {
-    private nextTempVariableNumber = 0;
+    private nextTempIdentifierNumber = 0;
     private readonly instructions: Instruction[] = [];
     private readonly labels: Map<string, number> = new Map();
 
-    nextTempVariableName(): string {
-        return `$temp${this.nextTempVariableNumber++}`;
+    nextTempIdentifier(): string {
+        return `$temp${this.nextTempIdentifierNumber++}`;
     }
 
     resolveExpressionToVariable(expression: Expression): string {
@@ -35,7 +35,7 @@ class Emitter {
         // read, and test expectations easier to write.
         let variable = "";
         this.assign(() => {
-            variable = this.nextTempVariableName();
+            variable = this.nextTempIdentifier();
             return variable;
         }, expression);
         return variable;
@@ -71,7 +71,7 @@ class Emitter {
                 `op ${operation.op} ${target()} ${lvalue} ${rvalue}`
             );
         } else {
-            const tempVariable = this.nextTempVariableName();
+            const tempVariable = this.nextTempIdentifier();
             this.instructions.push(
                 `op ${operation.not} ${tempVariable} ${lvalue} ${rvalue}`
             );
@@ -79,35 +79,80 @@ class Emitter {
         }
     }
 
-    emit(statement: Block): void {
-        const { type } = statement;
+    emitAll(blocks: Block[]) {
+        blocks.forEach((block) => {
+            this.emit(block);
+        });
+    }
+
+    getInstructions(): readonly string[] {
+        return this.instructions.map(this.resolveInstruction.bind(this));
+    }
+
+    private emit(block: Block): void {
+        const { type } = block;
         switch (type) {
             case "assignment":
-                this.assign(() => statement.lvalue, statement.rvalue);
+                this.assign(() => block.lvalue, block.rvalue);
                 break;
+
             case "end":
                 this.instructions.push(`end`);
                 break;
+
             case "goto":
                 this.instructions.push({
                     type: "jump",
-                    label: statement.label,
-                    operation: "always",
+                    label: block.label,
+                    operator: "always",
                     lvalue: "0",
                     rvalue: "0",
                 });
                 break;
-            case "if":
+
+            case "if": {
+                const ifLabel = this.nextTempIdentifier();
+                const endLabel = this.nextTempIdentifier();
+
+                // Conditionally jump to the "if" block
+                this.instructions.push({
+                    type: "jump",
+                    label: ifLabel,
+                    // MASSIVE HACK
+                    lvalue: (block.condition as BinaryOperation)
+                        .lvalue as string,
+                    operator: "equal",
+                    rvalue: (block.condition as BinaryOperation)
+                        .rvalue as string,
+                });
+
+                // End of "else" block - jump to end
+                this.instructions.push({
+                    type: "jump",
+                    label: endLabel,
+                    operator: "always",
+                    lvalue: "0",
+                    rvalue: "0",
+                });
+
+                // Start of "if" block
+                this.addLabel(ifLabel);
+                this.emitAll(block.ifBlock);
+
+                this.addLabel(endLabel);
                 break;
+            }
+
             case "label":
-                if (this.labels.has(statement.label)) {
-                    throw new Error(`Duplicate label "${statement.label}"`);
+                if (this.labels.has(block.label)) {
+                    throw new Error(`Duplicate label "${block.label}"`);
                 }
 
-                this.labels.set(statement.label, this.instructions.length);
+                this.addLabel(block.label);
                 break;
+
             case "print": {
-                const value = this.resolveExpressionToVariable(statement.value);
+                const value = this.resolveExpressionToVariable(block.value);
                 this.instructions.push(`print ${value}`);
                 break;
             }
@@ -117,7 +162,7 @@ class Emitter {
         }
     }
 
-    resolveInstruction(instruction: Instruction): string {
+    private resolveInstruction(instruction: Instruction): string {
         if (typeof instruction === "string") {
             return instruction;
         }
@@ -133,7 +178,7 @@ class Emitter {
                 const jumpOffset =
                     labelOffset >= this.instructions.length ? 0 : labelOffset;
 
-                return `jump ${jumpOffset} ${instruction.operation} ${instruction.lvalue} ${instruction.rvalue}`;
+                return `jump ${jumpOffset} ${instruction.operator} ${instruction.lvalue} ${instruction.rvalue}`;
             }
 
             default:
@@ -141,15 +186,13 @@ class Emitter {
         }
     }
 
-    getInstructions(): readonly string[] {
-        return this.instructions.map(this.resolveInstruction.bind(this));
+    private addLabel(label: string) {
+        this.labels.set(label, this.instructions.length);
     }
 }
 
 export function emit(blocks: Block[]): readonly string[] {
     const emitter = new Emitter();
-    blocks.forEach((block) => {
-        emitter.emit(block);
-    });
+    emitter.emitAll(blocks);
     return emitter.getInstructions();
 }
