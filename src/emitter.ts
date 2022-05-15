@@ -1,6 +1,6 @@
-import { Block } from "./blocks";
 import { BinaryOperation, Expression } from "./expressions";
 import { binaryOperators } from "./operators";
+import { Block } from "./statements";
 import { UnreachableCaseError } from "./utils";
 
 interface JumpInstruction {

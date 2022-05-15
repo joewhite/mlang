@@ -1,6 +1,6 @@
-import { parsedLinesToBlocks } from "./block-builder";
 import { emit } from "./emitter";
 import { linesToParsedLines } from "./parser";
+import { parsedLinesToBlocks } from "./statement-builder";
 import { stringsToLines } from "./tokenizer";
 
 export function compile(source: string[]): readonly string[] {

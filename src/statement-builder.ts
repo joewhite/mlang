@@ -1,4 +1,4 @@
-import { Block } from "./blocks";
+import { Block } from "./statements";
 import { ParsedLine } from "./parsed-lines";
 
 class BlockBuilder {
