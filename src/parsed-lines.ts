@@ -1,4 +1,5 @@
 import { Expression } from "./expressions";
+import { InputLine } from "./tokenizer";
 
 export interface AssignmentStatement {
     readonly type: "assignment";
@@ -37,3 +38,5 @@ export type Statement =
     | IfHeaderStatement
     | LabelStatement
     | PrintStatement;
+
+export type ParsedLine = Statement & { source: InputLine };

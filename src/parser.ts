@@ -6,7 +6,7 @@ import {
     relationalOperators,
     unaryOperators,
 } from "./operators";
-import { Statement } from "./parsed-lines";
+import { ParsedLine, Statement } from "./parsed-lines";
 import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 
 // Precedence names ("parseSomePrecedence" methods below) are borrowed from
@@ -15,8 +15,6 @@ import { identifierRegex, InputLine, numberRegex } from "./tokenizer";
 // https://github.com/dotnet/roslyn/blob/main/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs
 // This code is based on revision:
 // https://github.com/dotnet/roslyn/blob/0c31b36b31a1ebebc38e1e09a61e44e41a84abd2/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L10309
-
-export type ParsedLine = Statement & { source: InputLine };
 
 class TokenStream {
     readonly line: InputLine;

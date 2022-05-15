@@ -1,5 +1,5 @@
 import { Block } from "./blocks";
-import { ParsedLine } from "./parser";
+import { ParsedLine } from "./parsed-lines";
 
 class BlockBuilder {
     private readonly lines: ParsedLine[];
