@@ -1,7 +1,21 @@
-import { BinaryOperation, Expression } from "./expressions";
+import { Expression } from "./expressions";
 import { binaryOperators } from "./operators";
 import { Statement } from "./statements";
 import { UnreachableCaseError } from "./utils";
+
+const conditionOperators = ["==", "!=", "<", "<=", ">", ">=", "==="] as const;
+
+type ConditionOperator = typeof conditionOperators[number];
+
+function isConditionOperator(operator: string): operator is ConditionOperator {
+    return conditionOperators.includes(operator as ConditionOperator);
+}
+
+interface Condition {
+    lvalue: string;
+    operator: ConditionOperator;
+    rvalue: string;
+}
 
 interface JumpInstruction {
     readonly type: "jump";
@@ -14,12 +28,17 @@ interface JumpInstruction {
 type Instruction = string | JumpInstruction;
 
 class Emitter {
-    private nextTempIdentifierNumber = 0;
+    private nextTempLabelNumber = 0;
+    private nextTempVariableNumber = 0;
     private readonly instructions: Instruction[] = [];
     private readonly labels: Map<string, number> = new Map();
 
-    nextTempIdentifier(): string {
-        return `$temp${this.nextTempIdentifierNumber++}`;
+    nextTempVariableName(): string {
+        return `$temp${this.nextTempVariableNumber++}`;
+    }
+
+    nextTempLabel(): string {
+        return `$label${this.nextTempLabelNumber++}`;
     }
 
     resolveExpressionToVariable(expression: Expression): string {
@@ -35,7 +54,7 @@ class Emitter {
         // read, and test expectations easier to write.
         let variable = "";
         this.assign(() => {
-            variable = this.nextTempIdentifier();
+            variable = this.nextTempVariableName();
             return variable;
         }, expression);
         return variable;
@@ -71,7 +90,7 @@ class Emitter {
                 `op ${operation.op} ${target()} ${lvalue} ${rvalue}`
             );
         } else {
-            const tempVariable = this.nextTempIdentifier();
+            const tempVariable = this.nextTempVariableName();
             this.instructions.push(
                 `op ${operation.not} ${tempVariable} ${lvalue} ${rvalue}`
             );
@@ -111,19 +130,17 @@ class Emitter {
                 break;
 
             case "if": {
-                const ifLabel = this.nextTempIdentifier();
-                const endLabel = this.nextTempIdentifier();
+                const ifLabel = this.nextTempLabel();
+                const endLabel = this.nextTempLabel();
 
+                const condition = this.getCondition(statement.condition);
                 // Conditionally jump to the "if" block
                 this.instructions.push({
                     type: "jump",
                     label: ifLabel,
-                    // MASSIVE HACK
-                    lvalue: (statement.condition as BinaryOperation)
-                        .lvalue as string,
-                    operator: "equal",
-                    rvalue: (statement.condition as BinaryOperation)
-                        .rvalue as string,
+                    lvalue: condition.lvalue,
+                    operator: binaryOperators[condition.operator].op,
+                    rvalue: condition.rvalue,
                 });
 
                 // End of "else" block - jump to end
@@ -160,6 +177,37 @@ class Emitter {
             default:
                 throw new UnreachableCaseError(type);
         }
+    }
+
+    private getCondition(expression: Expression): Condition {
+        if (
+            typeof expression !== "string" &&
+            expression.type === "binaryOperation"
+        ) {
+            if (isConditionOperator(expression.operator)) {
+                // The expression is a binary operation using an operator
+                // that's supported by the jump instruction. Convert it to
+                // a Condition.
+                const lvalue = this.resolveExpressionToVariable(
+                    expression.lvalue
+                );
+                const rvalue = this.resolveExpressionToVariable(
+                    expression.rvalue
+                );
+                return {
+                    lvalue,
+                    operator: expression.operator,
+                    rvalue,
+                };
+            }
+        }
+
+        // In all other cases, return "expression != 0".
+        return {
+            lvalue: this.resolveExpressionToVariable(expression),
+            operator: "!=",
+            rvalue: "0",
+        };
     }
 
     private resolveInstruction(instruction: Instruction): string {

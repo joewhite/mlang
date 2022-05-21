@@ -300,6 +300,14 @@ describe("goto", () => {
     });
 });
 describe("if", () => {
+    it("works with variable instead of expression", () => {
+        expect(compile(["if a", "  print 1", "print 2"])).toStrictEqual([
+            "jump 2 notEqual a 0",
+            "jump 3 always 0 0",
+            "print 1",
+            "print 2",
+        ]);
+    });
     it("works without else", () => {
         expect(
             compile(["if a == b", "  print 1", "  print 2", "print 3"])
@@ -332,6 +340,27 @@ describe("if", () => {
             "print 3",
             "print 4",
             "print 5",
+        ]);
+    });
+    it("works with equality of things more complicated than variables", () => {
+        expect(
+            compile(["if a + b == c + d", "  print 1", "print 2"])
+        ).toStrictEqual([
+            "op add $temp0 a b",
+            "op add $temp1 c d",
+            "jump 4 equal $temp0 $temp1",
+            "jump 5 always 0 0",
+            "print 1",
+            "print 2",
+        ]);
+    });
+    it("works with operators not directly supported by instruction set", () => {
+        expect(compile(["if a - 1", "  print 1", "print 2"])).toStrictEqual([
+            "op sub $temp0 a 1",
+            "jump 3 notEqual $temp0 0",
+            "jump 4 always 0 0",
+            "print 1",
+            "print 2",
         ]);
     });
 });
